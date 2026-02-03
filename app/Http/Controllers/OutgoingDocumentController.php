@@ -31,7 +31,8 @@ class OutgoingDocumentController extends Controller
             'comments'                  => 'nullable|string',
 
             // ✅ ΥΠΟΧΡΕΩΤΙΚΟ PDF
-            'attachment'                => 'required|file|mimes:pdf|max:10240',
+            'attachment' => 'required|file|mimes:pdf|max:51200',
+
         ]);
 
         // ✅ Δεν περνάμε το attachment στο create
@@ -82,7 +83,8 @@ class OutgoingDocumentController extends Controller
             'comments'                  => 'nullable|string',
 
             // ✅ ΥΠΟΧΡΕΩΤΙΚΟ PDF (ίδιο όπως incoming)
-            'attachment'                => 'required|file|mimes:pdf|max:10240',
+            'attachment' => 'required|file|mimes:pdf|max:51200',
+
         ]);
 
         // ✅ Δεν περνάμε το attachment στο update array

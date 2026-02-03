@@ -148,7 +148,7 @@
                         <input type="file" name="attachment" accept="application/pdf" required>
 
                         <small style="display:block; margin-top:4px; opacity:.7;">
-                           Επιτρέπεται μόνο αρχείο PDF (μέχρι 10MB).
+                           Επιτρέπεται μόνο αρχείο PDF (μέχρι 50MB).
                         </small>
 
 
@@ -216,7 +216,7 @@
                         <input type="file" name="attachment" accept="application/pdf" required>
 
                          <small style="display:block; margin-top:4px; opacity:.7;">
-                           Επιτρέπεται μόνο αρχείο PDF (μέχρι 10MB).
+                           Επιτρέπεται μόνο αρχείο PDF (μέχρι 50MB).
                          </small>
                           @if ($errors->any())
                              <div style="border:1px solid red; padding:8px; margin-bottom:10px; color:red;">
