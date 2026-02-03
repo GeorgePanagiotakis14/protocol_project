@@ -53,17 +53,21 @@ class OutgoingDocumentController extends Controller
         // ✅ Αποθήκευση PDF
         $file = $request->file('attachment');
 
-        // Folder date
-        $folderDate = $document->incoming_date
-         ? Carbon::parse($document->incoming_date)->format('Y-m-d')
-         : now()->format('Y-m-d');
+        // Decide which date to use
+        $date = $document->incoming_date
+            ? Carbon::parse($document->incoming_date)
+            : now();
+
+        // Year + folder date
+        $year = $date->format('Y');
+        $folderDate = $date->format('Y-m-d');
 
         // Filename
         $filename = 'outgoing_' . $document->aa . '_' . now()->format('His') . '.pdf';
         
         // Store
         $path = $file->storeAs(
-            "outgoing/{$folderDate}",
+            "{$year}/outgoing/{$folderDate}",
             $filename,
             'public'
         );
