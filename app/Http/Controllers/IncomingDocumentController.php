@@ -6,6 +6,7 @@ use App\Models\IncomingDocument;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class IncomingDocumentController extends Controller
 {
@@ -51,8 +52,21 @@ class IncomingDocumentController extends Controller
 
         // Αποθήκευση PDF
         $file = $request->file('attachment');
-        $filename = 'incoming_' . $document->aa . '_' . now()->format('Ymd_His') . '.pdf';
-        $path = $file->storeAs('incoming_attachments', $filename, 'public');
+
+        // Folder date
+        $folderDate = $document->incoming_date
+         ? Carbon::parse($document->incoming_date)->format('Y-m-d')
+         : now()->format('Y-m-d');
+
+        // Filename
+        $filename = 'incoming_' . $document->aa . '_' . now()->format('His') . '.pdf';
+        
+        // Store
+        $path = $file->storeAs(
+            "incoming/{$folderDate}",
+            $filename,
+            'public'
+        );
 
         $document->update([
             'attachment_path' => $path,
