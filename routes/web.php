@@ -61,6 +61,10 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/incoming/{id}/attachment', [IncomingDocumentController::class, 'downloadAttachment'])
     ->name('incoming.attachment');
 
+    Route::get('/outgoing/{id}/attachment', [OutgoingDocumentController::class, 'viewAttachment'])
+    ->name('outgoing.attachment');
+
+
 });
 
 /*

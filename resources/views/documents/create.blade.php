@@ -8,8 +8,8 @@
 
     @php
         // ✅ Επόμενο σειριακό Α/Α (όπως το θέλεις) - ΔΕΝ γράφεται από χρήστη
-        $nextIncomingAa = ((int) (\App\Models\IncomingDocument::max('protocol_number') ?? 0)) + 1;
-        $nextOutgoingAa = ((int) (\App\Models\OutgoingDocument::max('protocol_number') ?? 0)) + 1;
+        $nextIncomingAa = ((int) (\App\Models\IncomingDocument::max('aa') ?? 0)) + 1;
+        $nextOutgoingAa = ((int) (\App\Models\OutgoingDocument::max('aa') ?? 0)) + 1;
 
         // ✅ Για αναζήτηση (Επιλογή Β): πληκτρολογείς Α/Α -> βρίσκουμε το ID
         $incomingPairs = \App\Models\IncomingDocument::orderBy('protocol_number', 'asc')->get(['id', 'protocol_number']);
@@ -161,7 +161,8 @@
                     <div class="doc-title">ΕΞΕΡΧΟΜΕΝΑ ΕΓΓΡΑΦΑ</div>
 
                     <form
-                        action="{{ route('outgoing.store') }}"
+                        action="{{ route('outgoing.store') }}" enctype="multipart/form-data"
+
                         method="POST"
                         id="outgoingForm"
                         data-serial-outgoing-aa="{{ (int) $nextOutgoingAa }}"
@@ -210,6 +211,18 @@
 
                         <label>Παρατηρήσεις</label>
                         <textarea name="comments"></textarea>
+
+                        <label>Συνημμένο (PDF)</label>
+                        <input type="file" name="attachment" accept="application/pdf" required>
+
+                         <small style="display:block; margin-top:4px; opacity:.7;">
+                           Επιτρέπεται μόνο αρχείο PDF (μέχρι 10MB).
+                         </small>
+                          @if ($errors->any())
+                             <div style="border:1px solid red; padding:8px; margin-bottom:10px; color:red;">
+                                {{ $errors->first() }}
+                            </div>
+                          @endif
 
                         <button class="save-btn">Αποθήκευση Εξερχομένου</button>
                     </form>
@@ -263,7 +276,6 @@
             }
 
             aaInput.addEventListener('input', applyReplySelection);
-            aaInput.addEventListener('change', applyReplySelection);
 
             setOutgoingAa(serialOutgoingAa);
         })();

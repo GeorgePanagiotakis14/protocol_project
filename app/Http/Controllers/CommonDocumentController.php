@@ -16,7 +16,7 @@ class CommonDocumentController extends Controller
             }])
             ->whereHas('outgoingReplies')
             ->orderBy('aa', 'asc')
-            ->get();
+            ->paginate(10);
 
         return view('documents.common', compact('incomingGroups'));
     }

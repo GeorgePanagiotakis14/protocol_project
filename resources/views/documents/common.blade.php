@@ -106,4 +106,6 @@
         </table>
     </div>
 
+    {{ $incomingGroups->links() }}
+
 </x-app-layout>

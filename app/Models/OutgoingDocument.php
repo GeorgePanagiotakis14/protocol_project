@@ -20,6 +20,8 @@ class OutgoingDocument extends Model
         'incoming_document_number',
         'summary',
         'comments',
+        'attachment_path',
+
 
         // ✅ Απάντηση σε εισερχόμενο (nullable)
         'reply_to_incoming_id',

@@ -18,6 +18,7 @@
                 <th>Χρονολογία</th>
                 <th>Σχετικοί Αριθμοί</th>
                 <th>Φάκελος Αρχείου</th>
+                <th>Συνημμένο</th>
             </tr>
             </thead>
 
@@ -34,10 +35,22 @@
                     <td>{{ $doc->document_date }}</td>
                     <td>{{ $doc->incoming_document_number }}</td>
                     <td>{{ $doc->incoming_protocol }}</td>
+
+                    <td style="text-align:center; white-space:nowrap;">
+                        @if($doc->attachment_path)
+                            <a href="{{ route('outgoing.attachment', $doc->id) }}"
+                               target="_blank"
+                               style="color:#2563eb; font-weight:600; text-decoration:underline;">
+                                Προβολή
+                            </a>
+                        @else
+                            —
+                        @endif
+                    </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" align="center">Δεν υπάρχουν εγγραφές</td>
+                    <td colspan="7" align="center">Δεν υπάρχουν εγγραφές</td>
                 </tr>
             @endforelse
             </tbody>
