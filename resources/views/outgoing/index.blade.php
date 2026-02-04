@@ -38,8 +38,8 @@
 
                     <td style="text-align:center; white-space:nowrap;">
                         @if($doc->attachment_path)
-                            <a href="{{ route('outgoing.attachment', $doc->id) }}"
-                               target="_blank"
+                            <a href="{{ route('outgoing.attachments.index', $doc->id) }}"
+
                                style="color:#2563eb; font-weight:600; text-decoration:underline;">
                                 Προβολή
                             </a>

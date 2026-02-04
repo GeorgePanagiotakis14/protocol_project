@@ -72,6 +72,11 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/outgoing/{id}/attachment', [OutgoingDocumentController::class, 'viewAttachment'])
     ->name('outgoing.attachment');
 
+    Route::get('/outgoing/{id}/attachments', [OutgoingDocumentController::class, 'attachmentsIndex'])
+     ->name('outgoing.attachments.index');
+
+    Route::get('/outgoing/{id}/attachments/{attachmentId}', [OutgoingDocumentController::class, 'attachmentsView'])
+    ->name('outgoing.attachments.view');
 
 
 
