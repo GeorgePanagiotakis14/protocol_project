@@ -144,12 +144,31 @@
                         <label>Φάκελος Αρχείου</label>
                         <input type="text" name="comments">
 
-                        <label>Συνημμένο (PDF)</label>
-                        <input type="file" name="attachment" accept="application/pdf" required>
+                        <label>Συνημμένα (PDF)</label>
 
-                        <small style="display:block; margin-top:4px; opacity:.7;">
-                           Επιτρέπεται μόνο αρχείο PDF (μέχρι 50MB).
-                        </small>
+                        <input
+                         type="file"
+                         name="attachments[]"
+                         id="incoming_attachments"
+                         accept="application/pdf"
+                         multiple
+                         style="display:none"
+                        >
+
+                         <button
+                         type="button"
+                         id="incoming_add_files_btn"
+                         style="padding:6px 12px; border-radius:6px; background:#16a34a; color:#fff; border:none; cursor:pointer;"
+                        >
+                         Προσθήκη αρχείων
+                        </button>
+
+                         <small style="display:block; margin-top:6px; opacity:.7;">
+                          Επιτρέπεται μόνο αρχείο PDF (μέχρι 50MB).
+                         </small>
+
+                         <ul id="incoming_attachments_list" style="margin-top:8px; padding-left:18px;"></ul>
+
 
 
                         <button class="save-btn">Αποθήκευση Εισερχομένου</button>
@@ -231,6 +250,104 @@
             </div>
         </div>
     </div>
+    <script>
+        (function () {
+             const input = document.getElementById('incoming_attachments');
+             const list  = document.getElementById('incoming_attachments_list');
+             const btn   = document.getElementById('incoming_add_files_btn');
+
+             if (!input || !list || !btn) return;
+
+             // Θα κρατάμε τα αρχεία εδώ ώστε να "προστίθενται"
+             const dt = new DataTransfer();
+
+             function fileKey(file) {
+                 // Unique-ish fingerprint για να αποφεύγουμε διπλότυπα
+                 return `${file.name}__${file.size}__${file.lastModified}`;
+                 }
+
+             function syncInputFiles() {
+                 input.files = dt.files;
+                 }
+
+                function renderList() {
+                    list.innerHTML = '';
+
+                 const files = Array.from(dt.files);
+                 if (files.length === 0) return;
+
+                files.forEach((file, index) => {
+                 const li = document.createElement('li');
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = file.name;
+
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.textContent = 'Αφαίρεση';
+                    removeBtn.style.marginLeft = '10px';
+                    removeBtn.style.borderRadius = '4px';
+                    removeBtn.style.padding = '2px 6px';
+                    removeBtn.style.background = '#dc2626'; // κόκκινο
+                    removeBtn.style.color = '#fff';
+                    removeBtn.style.border = 'none';
+                    removeBtn.style.cursor = 'pointer';
+                    removeBtn.style.lineHeight = '1';
+
+                    removeBtn.addEventListener('click', () => {
+                        // rebuild dt χωρίς το συγκεκριμένο index
+                        const rebuild = new DataTransfer();
+                    Array.from(dt.files).forEach((f, i) => {
+                        if (i !== index) rebuild.items.add(f);
+                        });
+
+                        // αντικατάσταση περιεχομένου dt
+                        while (dt.items.length) dt.items.remove(0);
+                        Array.from(rebuild.files).forEach(f => dt.items.add(f));
+
+                         syncInputFiles();
+                         renderList();
+                        });
+
+                        li.appendChild(nameSpan);
+                         li.appendChild(removeBtn);
+                        list.appendChild(li);
+                    });
+                }
+
+            btn.addEventListener('click', () => {
+            input.click();
+             });
+
+            input.addEventListener('change', () => {
+             const selected = Array.from(input.files || []);
+             if (selected.length === 0) return;
+
+             const existingKeys = new Set(Array.from(dt.files).map(fileKey));
+
+             selected.forEach((file) => {
+                 // Επιτρέπουμε μόνο PDF από πλευράς UX (backend το ελέγχει 100%)
+                 if (file.type !== 'application/pdf') return;
+
+                 const key = fileKey(file);
+                 if (!existingKeys.has(key)) {
+                     dt.items.add(file);
+                     existingKeys.add(key);
+                  }
+                });
+
+             syncInputFiles();
+             renderList();
+
+                // reset το input ώστε αν επιλέξεις ΞΑΝΑ το ίδιο αρχείο να ξανα-πιάσει change event
+             
+            });
+
+                // Initial render (empty)
+             renderList();
+            })();
+    </script>
+
 
     <script>
         (function () {

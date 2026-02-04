@@ -26,4 +26,10 @@ class IncomingDocument extends Model
     {
         return $this->hasMany(OutgoingDocument::class, 'reply_to_incoming_id');
     }
+
+    public function attachments()
+    {
+        return $this->hasMany(\App\Models\IncomingDocumentAttachment::class, 'incoming_document_id');
+    }
+
 }

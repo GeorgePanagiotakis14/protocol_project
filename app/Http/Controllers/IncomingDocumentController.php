@@ -22,64 +22,72 @@ class IncomingDocumentController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'protocol_number'   => 'nullable|string',
-            'incoming_protocol' => 'nullable|string',
-            'incoming_date'     => 'nullable|date',
-            'subject'           => 'nullable|string',
-            'sender'            => 'nullable|string',
-            'document_date'     => 'nullable|date',
-            'summary'           => 'nullable|string',
-            'comments'          => 'nullable|string',
+         $validated = $request->validate([
+              'protocol_number'   => 'nullable|string',
+             'incoming_protocol' => 'nullable|string',
+             'incoming_date'     => 'nullable|date',
+             'subject'           => 'nullable|string',
+             'sender'            => 'nullable|string',
+             'document_date'     => 'nullable|date',
+             'summary'           => 'nullable|string',
+             'comments'          => 'nullable|string',
 
-            // ΥΠΟΧΡΕΩΤΙΚΟ PDF
-            'attachment'        => 'required|file|mimes:pdf|max:10240',
-        ]);
-
-        // ❗ ΔΕΝ στέλνουμε το attachment στο create
-        $data = $validated;
-        unset($data['attachment']);
-
-        $document = DB::transaction(function () use ($data) {
-            $nextAa = (int) (IncomingDocument::lockForUpdate()->max('aa') ?? 0) + 1;
-
-            return IncomingDocument::create([
-                ...$data,
-                'aa' => $nextAa,
-                'protocol_number' => (string) $nextAa,
+             // ΠΟΛΛΑ PDF
+             'attachments'       => 'required|array|min:1',
+             'attachments.*'     => 'file|mimes:pdf|max:51200', // 50MB το καθένα
             ]);
-        });
 
-        // Αποθήκευση PDF
-        $file = $request->file('attachment');
+         // ❗ Δεν περνάμε τα attachments στο create
+         $data = $validated;
+         unset($data['attachments']);
 
-        // Decide which date to use
-        $date = $document->incoming_date
-            ? Carbon::parse($document->incoming_date)
-            : now();
+         $document = DB::transaction(function () use ($data) {
+             $nextAa = (int) (IncomingDocument::lockForUpdate()->max('aa') ?? 0) + 1;
 
-        // Year + folder date
-        $year = $date->format('Y');
-        $folderDate = $date->format('Y-m-d');
+             return IncomingDocument::create([
+                 ...$data,
+                 'aa' => $nextAa,
+                 'protocol_number' => (string) $nextAa,
+                ]);
+            });
 
-        // Filename
-        $filename = 'incoming_' . $document->aa . '_' . now()->format('His') . '.pdf';
-        
-        // Store
-        $path = $file->storeAs(
-            "{$year}/incoming/{$folderDate}",
-            $filename,
-            'public'
-        );
+            // Αποθήκευση ΟΛΩΝ των PDF
+            $files = $request->file('attachments');
 
-        $document->update([
-            'attachment_path' => $path,
-        ]);
+            // Decide which date to use for folder
+            $date = $document->incoming_date
+             ? Carbon::parse($document->incoming_date)
+             : now();
 
-        audit_log('incoming', 'create', $document->id);
+            $year = $date->format('Y');
+            $folderDate = $date->format('Y-m-d');
 
-        return redirect()->back()->with('success', 'Το εισερχόμενο καταχωρήθηκε επιτυχώς.');
-    }
+         foreach ($files as $i => $file) {
+             $filename = 'incoming_' . $document->aa . '_' . now()->format('His') . '_' . ($i + 1) . '.pdf';
+
+             $path = $file->storeAs(
+                "{$year}/incoming/{$folderDate}",
+                $filename,
+                'public'
+                );
+
+             // Δημιουργία row στο νέο table
+             $document->attachments()->create([
+             'path' => $path,
+             'original_name' => $file->getClientOriginalName(),
+             'size' => $file->getSize(),
+             ]);
+
+             // Backward compatibility: το 1ο αρχείο γράφεται και στο attachment_path
+             if ($i === 0) {
+                  $document->update(['attachment_path' => $path]);
+                }
+            }
+
+         audit_log('incoming', 'create', $document->id);
+
+            return redirect()->back()->with('success', 'Το εισερχόμενο καταχωρήθηκε επιτυχώς.');
+        }
 
     public function edit($id)
     {
@@ -129,5 +137,26 @@ class IncomingDocumentController extends Controller
             'Content-Type' => 'application/pdf',
         ]);
     }   
+
+    public function attachmentsIndex($id)
+    {
+      $doc = IncomingDocument::with('attachments')->findOrFail($id);
+
+      return view('incoming.attachments', compact('doc'));
+    }
+
+    public function attachmentsView($id, $attachmentId)
+    {
+        $doc = IncomingDocument::findOrFail($id);
+
+        $att = $doc->attachments()->findOrFail($attachmentId);
+
+        abort_unless(Storage::disk('public')->exists($att->path), 404);
+
+        return response()->file(Storage::disk('public')->path($att->path), [
+            'Content-Type' => 'application/pdf',
+        ]);
+    }
+
 
 }
