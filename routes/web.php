@@ -92,6 +92,21 @@ Route::middleware(['auth', 'active', 'admin'])
     ->name('admin.')
     ->group(function () {
 
+        //Edit existing incoming documents
+        Route::prefix('incoming')->name('incoming.')->group(function () {
+        Route::get('/', [IncomingDocumentController::class, 'index'])->name('index');
+        Route::get('/{id}/edit', [IncomingDocumentController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [IncomingDocumentController::class, 'update'])->name('update');
+        });
+
+        //Edit existing outgoing documents
+        Route::prefix('incoming')->name('incoming.')->group(function () {
+        Route::get('/', [IncomingDocumentController::class, 'index'])->name('index');
+        Route::get('/{id}/edit', [IncomingDocumentController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [IncomingDocumentController::class, 'update'])->name('update');
+        });
+
+
         // Users management
         Route::get('/users', [UserManagementController::class, 'index'])
             ->name('users.index');

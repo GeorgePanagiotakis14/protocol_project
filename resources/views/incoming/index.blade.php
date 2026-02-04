@@ -21,6 +21,8 @@
                     <th>Περίληψη</th>
                     <th>Φάκελος Αρχείου</th>
                     <th>Συνημμένο</th>
+                    <th>Ενέργειες</th>
+
                 </tr>
             </thead>
 
@@ -50,6 +52,13 @@
                                 —
                             @endif
                         </td>
+                        <td style="text-align:center;">
+                            <a href="{{ route('incoming.edit', $doc->id) }}"
+                                 style="color:#16a34a; font-weight:600; text-decoration:underline;">
+                                 Επεξεργασία
+                            </a>
+                        </td>
+
                     </tr>
                 @empty
                     <tr>

@@ -19,6 +19,7 @@
                 <th>Σχετικοί Αριθμοί</th>
                 <th>Φάκελος Αρχείου</th>
                 <th>Συνημμένο</th>
+                <th>Ενέργειες</th>
             </tr>
             </thead>
 
@@ -46,6 +47,12 @@
                         @else
                             —
                         @endif
+                    </td>
+                    <td style="text-align:center;">
+                        <a href="{{ route('outgoing.edit', $doc->id) }}"
+                        style="color:#16a34a; font-weight:600; text-decoration:underline;">
+                         Επεξεργασία
+                        </a>
                     </td>
                 </tr>
             @empty
