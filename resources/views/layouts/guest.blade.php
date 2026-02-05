@@ -1,30 +1,31 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'Laravel') }}</title>
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center font-sans antialiased"
+      style="background: linear-gradient(135deg, #1f2937 0%, #3b82f6 100%); position: relative;">
 
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
-            <div>
-                <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
-                </a>
-            </div>
+    <!-- Τίτλος πάνω από το πλαίσιο -->
+    <h1 style="font-weight: 400; font-size: 3.5rem; margin-bottom: 2rem; color: white;">
+        Σύστημα Διαχείρισης Πρωτοκόλλων
+    </h1>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
-                {{ $slot }}
-            </div>
-        </div>
-    </body>
+    <!-- Λευκό τετράγωνο πλαίσιο για login -->
+    <div class="w-80 h-80 bg-white rounded-lg shadow-lg p-6 flex flex-col justify-between z-10">
+        {{ $slot }}
+    </div>
+
+    <!-- Logo κάτω δεξιά, fixed ώστε να μη χρειάζεται scroll -->
+    <img src="{{ asset('images/library-sparta-logo.png') }}" 
+        alt="Library Sparta Logo" 
+        class="w-16 h-16 fixed bottom-0 right-0 opacity-50 pointer-events-none select-none z-20">
+
+</body>
 </html>

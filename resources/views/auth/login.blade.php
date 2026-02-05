@@ -1,47 +1,73 @@
 <x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
+    <!-- Τίτλος έξω από πλαίσιο, μεγάλο και λευκό 
+    <h1 class="text-white text-6xl font-bold mb-6 text-center select-none">
+        Σύστημα Διαχείρισης Πρωτοκόλλων
+    </h1> -->
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+    <!-- Τετράγωνο λευκό πλαίσιο -->
+    <div class="w-80 h-80 bg-white rounded-lg shadow-lg p-6 flex flex-col justify-between">
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+        <!-- Μήνυμα σύνδεσης (όχι bold) -->
+        <p class="text-black text-center text-base font-normal mb-4 select-none">
+            Συνδεθείτε για να εισέλθετε στο σύστημα.
+        </p>
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
+        <!-- Login Form -->
+        <form method="POST" action="{{ route('login') }}" class="flex flex-col justify-between h-full">
+            @csrf
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+            <!-- Email -->
+            <div>
+                <x-input-label for="email" :value="__('Email')" />
+                <x-text-input
+                    id="email"
+                    class="block mt-1 w-full text-sm"
+                    type="email"
+                    name="email"
+                    :value="old('email')"
+                    required
+                    autofocus
+                    autocomplete="username"
+                />
+                <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            </div>
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-            </label>
-        </div>
+            <!-- Password -->
+            <div class="mt-3">
+                <x-input-label for="password" :value="__('Κωδικός')" />
+                <x-text-input
+                    id="password"
+                    class="block mt-1 w-full text-sm"
+                    type="password"
+                    name="password"
+                    required
+                    autocomplete="current-password"
+                />
+                <x-input-error :messages="$errors->get('password')" class="mt-2" />
+            </div>
 
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif
+            <!-- Remember Me -->
+            <div class="mt-4 flex items-center">
+                <input
+                    id="remember_me"
+                    type="checkbox"
+                    name="remember"
+                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                />
+                <label for="remember_me" class="ml-2 block text-sm text-gray-600 select-none">
+                    Θυμήσου με
+                </label>
+            </div>
 
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
-        </div>
-    </form>
+            <!-- Submit Button -->
+            <div class="flex justify-end mt-4">
+                <x-primary-button class="text-sm px-4 py-2">
+                    Σύνδεση
+                </x-primary-button>
+            </div>
+        </form>
+
+    </div>
+
 </x-guest-layout>
