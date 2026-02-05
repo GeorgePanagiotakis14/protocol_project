@@ -182,5 +182,19 @@ class OutgoingDocumentController extends Controller
             'Content-Type' => 'application/pdf',
         ]);
     }
+    public function attachmentsViewer($id, $attachmentId)
+   {
+    $doc = \App\Models\OutgoingDocument::findOrFail($id);
+    $att = $doc->attachments()->findOrFail($attachmentId);
+
+    // Τίτλος καρτέλας (σωστός)
+    $title = $att->original_name ?: ('outgoing_' . $doc->aa . '.pdf');
+
+    // Το PDF συνεχίζει να σερβίρεται από το υπάρχον route outgoing.attachments.view
+    $pdfUrl = route('outgoing.attachments.view', [$doc->id, $att->id]);
+
+    return view('outgoing.viewer', compact('doc', 'att', 'title', 'pdfUrl'));
+   }
+
 
 }

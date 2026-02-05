@@ -14,8 +14,9 @@
                     <li style="margin-bottom:8px;">
                         {{ $a->original_name ?? basename($a->path) }}
                         —
-                        <a href="{{ route('incoming.attachments.view', [$doc->id, $a->id]) }}"
-                           target="_blank"
+                        <a href="{{ route('incoming.attachments.viewer', [$doc->id, $a->id]) }}"
+ 
+                          
                            style="color:#2563eb; font-weight:600; text-decoration:underline;">
                             Προβολή
                         </a>

@@ -66,6 +66,9 @@ Route::middleware(['auth', 'active'])->group(function () {
 
     Route::get('/incoming/{id}/attachments/{attachmentId}', [IncomingDocumentController::class, 'attachmentsView'])
     ->name('incoming.attachments.view');
+ 
+    Route::get('/incoming/{id}/attachments/{attachmentId}/viewer', [IncomingDocumentController::class, 'attachmentsViewer'])
+    ->name('incoming.attachments.viewer');
 
 
 
@@ -78,6 +81,8 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/outgoing/{id}/attachments/{attachmentId}', [OutgoingDocumentController::class, 'attachmentsView'])
     ->name('outgoing.attachments.view');
 
+    Route::get('/outgoing/{id}/attachments/{attachmentId}/viewer', [OutgoingDocumentController::class, 'attachmentsViewer'])
+    ->name('outgoing.attachments.viewer');
 
 
 });

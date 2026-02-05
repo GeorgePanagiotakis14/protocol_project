@@ -133,8 +133,12 @@ class IncomingDocumentController extends Controller
         $filePath = storage_path('app/public/' . $doc->attachment_path);
         abort_unless(file_exists($filePath), 404);
 
+        $filename = 'incoming_' . $doc->aa . '.pdf';
+        $fallback = $filename;
+
         return response()->file($filePath, [
             'Content-Type' => 'application/pdf',
+            'Content-Disposition' => "inline; filename=\"{$fallback}\"; filename*=UTF-8''" . rawurlencode($filename),
         ]);
     }   
 
@@ -153,10 +157,26 @@ class IncomingDocumentController extends Controller
 
         abort_unless(Storage::disk('public')->exists($att->path), 404);
 
+        $filename = $att->original_name ?: ('incoming_' . $doc->aa . '.pdf');
+        $fallback = preg_replace('/[^A-Za-z0-9._-]/', '_', $filename);
+
         return response()->file(Storage::disk('public')->path($att->path), [
             'Content-Type' => 'application/pdf',
+            'Content-Disposition' => "inline; filename=\"{$fallback}\"; filename*=UTF-8''" . rawurlencode($filename),
         ]);
     }
+    public function attachmentsViewer($id, $attachmentId)
+   {
+    $doc = IncomingDocument::findOrFail($id);
+    $att = $doc->attachments()->findOrFail($attachmentId);
 
+    // Τίτλος καρτέλας (σωστός)
+    $title = $att->original_name ?: ('incoming_' . $doc->aa . '.pdf');
+
+    // Το PDF συνεχίζει να σερβίρεται από το υπάρχον route incoming.attachments.view
+    $pdfUrl = route('incoming.attachments.view', [$doc->id, $att->id]);
+
+    return view('incoming.viewer', compact('doc', 'att', 'title', 'pdfUrl'));
+   }
 
 }
