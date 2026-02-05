@@ -21,7 +21,11 @@
                     <th>Περίληψη</th>
                     <th>Φάκελος Αρχείου</th>
                     <th>Συνημμένο</th>
+                    @auth
+                    @if(auth()->user()->isAdmin())
                     <th>Ενέργειες</th>
+                    @endif
+                    @endauth
 
                 </tr>
             </thead>
@@ -52,12 +56,17 @@
                                 —
                             @endif
                         </td>
-                        <td style="text-align:center;">
-                            <a href="{{ route('incoming.edit', $doc->id) }}"
-                                 style="color:#16a34a; font-weight:600; text-decoration:underline;">
-                                 Επεξεργασία
-                            </a>
-                        </td>
+                        
+                        @auth
+                           @if(auth()->user()->isAdmin())
+                             <td style="text-align:center;">
+                                  <a href="{{ route('incoming.edit', $doc->id) }}"
+                                   style="color:#16a34a; font-weight:600; text-decoration:underline;">
+                                   Επεξεργασία
+                                  </a>
+                              </td>
+                           @endif
+                        @endauth
 
                     </tr>
                 @empty

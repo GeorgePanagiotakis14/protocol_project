@@ -44,7 +44,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     // Incoming documents
     Route::get('/incoming', [IncomingDocumentController::class, 'index'])->name('incoming.index');
     Route::post('/incoming/store', [IncomingDocumentController::class, 'store'])->name('incoming.store');
-    Route::get('/incoming/{id}/edit', [IncomingDocumentController::class, 'edit'])->name('incoming.edit');
+    //Route::get('/incoming/{id}/edit', [IncomingDocumentController::class, 'edit'])->name('incoming.edit');
     Route::put('/incoming/{id}', [IncomingDocumentController::class, 'update'])->name('incoming.update');
     Route::delete('/incoming/{id}', [IncomingDocumentController::class, 'destroy'])->name('incoming.destroy');
 
@@ -98,18 +98,16 @@ Route::middleware(['auth', 'active', 'admin'])
     ->name('admin.')
     ->group(function () {
 
-        //Edit existing incoming documents
         Route::prefix('incoming')->name('incoming.')->group(function () {
         Route::get('/', [IncomingDocumentController::class, 'index'])->name('index');
         Route::get('/{id}/edit', [IncomingDocumentController::class, 'edit'])->name('edit');
         Route::put('/{id}', [IncomingDocumentController::class, 'update'])->name('update');
         });
 
-        //Edit existing outgoing documents
-        Route::prefix('incoming')->name('incoming.')->group(function () {
-        Route::get('/', [IncomingDocumentController::class, 'index'])->name('index');
-        Route::get('/{id}/edit', [IncomingDocumentController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [IncomingDocumentController::class, 'update'])->name('update');
+        Route::prefix('outgoing')->name('outgoing.')->group(function () {
+        Route::get('/', [OutgoingDocumentController::class, 'index'])->name('index');
+        Route::get('/outgoing/{id}/edit', [OutgoingDocumentController::class, 'edit'])->name('outgoing.edit');
+        Route::put('/{id}', [OutgoingDocumentController::class, 'update'])->name('update');
         });
 
 

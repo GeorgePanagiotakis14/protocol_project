@@ -1,5 +1,3 @@
-<?php
-
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -11,16 +9,14 @@ return new class extends Migration {
             $table->id();
 
             $table->foreignId('outgoing_document_id')
-                ->constrained('outgoing_documents')
+                ->constrained()
                 ->cascadeOnDelete();
 
-            $table->string('path'); // storage path στο public disk
-            $table->string('original_name')->nullable();
-            $table->unsignedBigInteger('size')->nullable();
+            $table->string('path');
+            $table->string('original_name');
+            $table->unsignedBigInteger('size');
 
             $table->timestamps();
-
-            $table->index('outgoing_document_id');
         });
     }
 
