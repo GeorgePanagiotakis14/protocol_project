@@ -8,6 +8,7 @@ use App\Http\Controllers\OutgoingDocumentController;
 use App\Http\Controllers\CommonDocumentController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\DocumentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -141,3 +142,9 @@ Route::middleware(['auth', 'active', 'admin'])
     });
 
 require __DIR__.'/auth.php';
+
+Route::get('/documents/all', [DocumentController::class, 'all'])
+    ->name('documents.all');
+
+Route::get('incoming/attachment/{id}', [IncomingDocumentController::class, 'downloadAttachment'])->name('incoming.attachment');
+Route::get('outgoing/attachment/{id}', [OutgoingDocumentController::class, 'viewAttachment'])->name('outgoing.attachment');

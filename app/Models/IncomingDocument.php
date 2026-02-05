@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 
 class IncomingDocument extends Model
 {
+    use HasFactory;
     protected $table = 'incoming_documents';
 
     protected $fillable = [
@@ -33,3 +36,5 @@ class IncomingDocument extends Model
     }
 
 }
+
+

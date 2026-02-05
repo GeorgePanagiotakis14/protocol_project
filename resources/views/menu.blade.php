@@ -14,7 +14,12 @@
             <li><a href="{{ route('documents.create') }}">Νέο εξερχόμενο</a></li>
             <li><a href="{{ route('incoming.index') }}">Φάκελος εισερχομένων</a></li>
             <li><a href="{{ route('outgoing.index') }}">Φάκελος εξερχομένων</a></li>
+            <li><a href="{{ route('documents.all') }}">Όλα τα Πρωτόκολλα</a></li>
         </ul>
     </div>
 
 </x-app-layout>
+
+<a href="{{ route('documents.all') }}" class="{{ request()->routeIs('documents.all') ? 'active' : '' }}">
+    Όλα τα Πρωτόκολλα
+</a>

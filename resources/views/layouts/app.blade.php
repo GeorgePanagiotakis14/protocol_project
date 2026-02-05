@@ -70,6 +70,13 @@
            vertical-align: top;
         }
 
+        .home-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 25px;
+            width: 100%;
+            max-width: 1200px;
+        }
     </style>
 </head>
 <body>
@@ -100,13 +107,17 @@
     Κοινά Εισερχόμενα - Εξερχόμενα
     </a>
     
+    <a href="{{ route('documents.all') }}" class="{{ request()->routeIs('documents.all') ? 'active' : '' }}">
+    Όλα τα πρωτόκολλα
+    </a>
+
+
     @if(auth()->user()?->is_admin)
     <a href="{{ route('admin.audit.index') }}"
        class="{{ request()->routeIs('admin.audit.*') ? 'active' : '' }}">
         Audit Log
     </a>
     @endif
-
 
     @if(auth()->user()?->is_admin)
     <a href="{{ route('admin.users.index') }}"

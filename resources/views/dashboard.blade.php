@@ -97,6 +97,14 @@
             color: #888;
             text-align: center;
         }
+        .home-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 25px;
+            width: 100%;
+            max-width: 1200px;
+}
+
     </style>
 
     <div class="home-wrapper">
@@ -128,11 +136,15 @@
                 <p>Έγγραφα που σχετίζονται τόσο με εισερχόμενα όσο και με εξερχόμενα.</p>
             </a>
 
+            <!-- Νέα κάρτα για Όλα -->
+            <a href="{{ route('documents.all') }}" class="home-card">
+                <h3>Όλα τα πρωτόκολλα</h3>
+                <p>Προβολή όλων των εγγράφων: εισερχόμενα, εξερχόμενα και κοινά.</p>
+            </a>
+
         </div>
 
-        <div class="home-footer">
-            Σύστημα Πρωτοκόλλου – Εσωτερική χρήση
-        </div>
+
 
     </div>
 
