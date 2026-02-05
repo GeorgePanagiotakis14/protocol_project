@@ -10,13 +10,14 @@
         .proto-wrap { padding: 18px 0; overflow-x: auto; }
         table.proto {
             border-collapse: collapse;
+            border-spacing: 0;
             min-width: 1400px;
             width: 100%;
             background: #fff;
             font-size: 13px;
         }
         table.proto th, table.proto td {
-            border: 1px dotted #000;
+            border: 1px solid #000;
             padding: 8px 10px;
             vertical-align: top;
             white-space: normal;
@@ -31,8 +32,8 @@
             width: 14px;
             min-width: 14px;
             background: #1f6feb; /* “μπλε” σαν το excel bar */
-            border-left: 0;
-            border-right: 0;
+            border-left: 0 !important;
+            border-right: 0 !important;
             padding: 0 !important;
         }
         .num { text-align: center; white-space: nowrap; }
