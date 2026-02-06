@@ -8,11 +8,12 @@ use App\Models\IncomingDocument;
 use App\Models\OutgoingDocument;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\AllDocumentsExport;
+use Carbon\Carbon;
 
 class DocumentController extends Controller
 {
     public function index()
-    {
+    {   
         return view('menu');
     }
 
@@ -70,7 +71,6 @@ class DocumentController extends Controller
 
         $allDocuments = [];
 
-        // Προσθέτουμε τα εισερχόμενα με τα εξερχόμενά τους
         foreach($incomingDocs as $in) {
             $outgoingList = $in->outgoingReplies ?? collect();
             
@@ -82,7 +82,6 @@ class DocumentController extends Controller
             ];
         }
 
-        // Προσθέτουμε τα "μόνο εξερχόμενα" χωρίς εισερχόμενο
         foreach($orphanOutgoings as $out) {
             $allDocuments[] = [
                 'type' => 'outgoing',
@@ -92,12 +91,10 @@ class DocumentController extends Controller
             ];
         }
 
-        // Ταξινόμηση όλων κατά ημερομηνία
         usort($allDocuments, function($a, $b) {
             return strcmp($a['date'], $b['date']);
         });
 
-        // Προσθήκη συνεχούς αρίθμησης
         $documents = [];
         $counter = 1;
         foreach($allDocuments as $doc) {
@@ -107,4 +104,55 @@ class DocumentController extends Controller
 
         return view('documents.all', compact('documents'));
     }
+
+    public function print(Request $request)
+    {
+        $from = Carbon::parse($request->from)->startOfDay();
+        $to   = Carbon::parse($request->to)->endOfDay();
+
+        // Εισερχόμενα στο range
+        $incomingDocs = IncomingDocument::with('outgoingReplies')
+            ->whereBetween('incoming_date', [$from, $to])
+            ->get();
+
+        // Εξερχόμενα χωρίς εισερχόμενο στο range
+        $orphanOutgoings = OutgoingDocument::whereNull('reply_to_incoming_id')
+            ->whereBetween('document_date', [$from, $to])
+            ->get();
+
+        $allDocuments = [];
+
+        foreach ($incomingDocs as $in) {
+            $allDocuments[] = [
+                'type' => 'incoming',
+                'date' => $in->incoming_date,
+                'incoming' => $in,
+                'outgoing' => $in->outgoingReplies ?? collect()
+            ];
+        }
+
+        foreach ($orphanOutgoings as $out) {
+            $allDocuments[] = [
+                'type' => 'outgoing',
+                'date' => $out->document_date,
+                'incoming' => null,
+                'outgoing' => collect([$out])
+            ];
+        }
+
+        usort($allDocuments, function ($a, $b) {
+            return strcmp($a['date'], $b['date']);
+        });
+
+        $documents = [];
+        $counter = 1;
+        foreach ($allDocuments as $doc) {
+            $doc['display_aa'] = $counter++;
+            $documents[] = $doc;
+        }
+
+        // Μόνο εκτύπωση browser, χωρίς PDF
+        return view('documents.print', compact('documents', 'from', 'to'));
+    }
+
 }
