@@ -44,7 +44,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     // Incoming documents
     Route::get('/incoming', [IncomingDocumentController::class, 'index'])->name('incoming.index');
     Route::post('/incoming/store', [IncomingDocumentController::class, 'store'])->name('incoming.store');
-    //Route::get('/incoming/{id}/edit', [IncomingDocumentController::class, 'edit'])->name('incoming.edit');
+    Route::get('/incoming/{id}/edit', [IncomingDocumentController::class, 'edit'])->name('incoming.edit');
     Route::put('/incoming/{id}', [IncomingDocumentController::class, 'update'])->name('incoming.update');
     Route::delete('/incoming/{id}', [IncomingDocumentController::class, 'destroy'])->name('incoming.destroy');
 

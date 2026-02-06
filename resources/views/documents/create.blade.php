@@ -168,6 +168,11 @@
                         </small>
 
                         <ul id="incoming_attachments_list" style="margin-top:8px; padding-left:18px;"></ul>
+                        @if ($errors->getBag('incoming')->any())
+                         <div style="border:1px solid red; padding:8px; margin-bottom:10px; color:red;">
+                            {{ $errors->getBag('incoming')->first() }}
+                         </div>
+                        @endif
 
                         <button class="save-btn">Αποθήκευση Εισερχομένου</button>
                     </form>
@@ -237,7 +242,6 @@
                             id="outgoing_attachments"
                             accept="application/pdf"
                             multiple
-                            required
                             style="display:none"
                         />
 
@@ -255,11 +259,12 @@
 
                         <ul id="outgoing_attachments_list" style="margin-top:8px; padding-left:18px;"></ul>
 
-                        @if ($errors->any())
-                            <div style="border:1px solid red; padding:8px; margin-bottom:10px; color:red;">
-                                {{ $errors->first() }}
-                            </div>
-                        @endif
+                       @if ($errors->getBag('outgoing')->any())
+                        <div style="border:1px solid red; padding:8px; margin-bottom:10px; color:red;">
+                          {{ $errors->getBag('outgoing')->first() }}
+                        </div>
+                       @endif
+
 
                         <button class="save-btn">Αποθήκευση Εξερχομένου</button>
                     </form>

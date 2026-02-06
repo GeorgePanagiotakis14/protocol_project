@@ -18,23 +18,23 @@ class OutgoingDocumentController extends Controller
 
    public function store(Request $request)
 {
-    $validated = $request->validate([
-        'reply_to_incoming_id'      => 'nullable|exists:incoming_documents,id',
+   $validated = $request->validateWithBag('outgoing', [
+    'reply_to_incoming_id'      => 'nullable|exists:incoming_documents,id',
 
-        'protocol_number'           => 'required|string',   // το hidden που στέλνεις από τη φόρμα
-        'incoming_protocol'         => 'nullable|string',
-        'incoming_date'             => 'nullable|date',
-        'subject'                   => 'nullable|string',
-        'sender'                    => 'nullable|string',
-        'document_date'             => 'nullable|date',
-        'incoming_document_number'  => 'nullable|string',
-        'summary'                   => 'nullable|string',
-        'comments'                  => 'nullable|string',
+    'protocol_number'           => 'required|string',
+    'incoming_protocol'         => 'nullable|string',
+    'incoming_date'             => 'nullable|date',
+    'subject'                   => 'nullable|string',
+    'sender'                    => 'nullable|string',
+    'document_date'             => 'nullable|date',
+    'incoming_document_number'  => 'nullable|string',
+    'summary'                   => 'nullable|string',
+    'comments'                  => 'nullable|string',
 
-        // ✅ ΠΟΛΛΑ PDF (50MB το καθένα)
-        'attachments'               => 'required|array|min:1',
-        'attachments.*'             => 'file|mimes:pdf|max:51200',
+    'attachments'               => 'required|array|min:1',
+    'attachments.*'             => 'file|mimes:pdf|max:51200',
     ]);
+
 
     // ✅ Δεν περνάμε τα attachments στο create
     $data = $validated;
@@ -96,7 +96,7 @@ class OutgoingDocumentController extends Controller
 
     public function update(Request $request, $id)
     {
-        $validated = $request->validate([
+        $validated = $request->validateWithBag([
             'reply_to_incoming_id'      => 'nullable|exists:incoming_documents,id',
 
             'protocol_number'           => 'required|string',

@@ -22,20 +22,20 @@ class IncomingDocumentController extends Controller
 
     public function store(Request $request)
     {
-         $validated = $request->validate([
-              'protocol_number'   => 'nullable|string',
-             'incoming_protocol' => 'nullable|string',
-             'incoming_date'     => 'nullable|date',
-             'subject'           => 'nullable|string',
-             'sender'            => 'nullable|string',
-             'document_date'     => 'nullable|date',
-             'summary'           => 'nullable|string',
-             'comments'          => 'nullable|string',
+        $validated = $request->validateWithBag('incoming', [
+        'protocol_number'   => 'nullable|string',
+        'incoming_protocol' => 'nullable|string',
+        'incoming_date'     => 'nullable|date',
+        'subject'           => 'nullable|string',
+        'sender'            => 'nullable|string',
+        'document_date'     => 'nullable|date',
+        'summary'           => 'nullable|string',
+        'comments'          => 'nullable|string',
 
-             // ΠΟΛΛΑ PDF
-             'attachments'       => 'required|array|min:1',
-             'attachments.*'     => 'file|mimes:pdf|max:51200', // 50MB το καθένα
-            ]);
+        'attachments'       => 'required|array|min:1',
+        'attachments.*'     => 'file|mimes:pdf|max:51200',
+        ]);
+
 
          // ❗ Δεν περνάμε τα attachments στο create
          $data = $validated;
