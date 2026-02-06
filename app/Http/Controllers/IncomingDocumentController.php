@@ -42,7 +42,8 @@ class IncomingDocumentController extends Controller
          unset($data['attachments']);
 
          $document = DB::transaction(function () use ($data) {
-             $nextAa = (int) (IncomingDocument::lockForUpdate()->max('aa') ?? 0) + 1;
+             $nextAa = $this->nextProtocolNumber();
+
 
              return IncomingDocument::create([
                  ...$data,
@@ -142,12 +143,15 @@ class IncomingDocumentController extends Controller
         ]);
     }   
 
-    public function attachmentsIndex($id)
+    public function attachmentsIndex(Request $request, $id)
     {
-      $doc = IncomingDocument::with('attachments')->findOrFail($id);
+    $doc = IncomingDocument::with('attachments')->findOrFail($id);
 
-      return view('incoming.attachments', compact('doc'));
+    $backUrl = $request->query('return') ?: route('incoming.index');
+
+    return view('incoming.attachments', compact('doc', 'backUrl'));
     }
+
 
     public function attachmentsView($id, $attachmentId)
     {
@@ -178,5 +182,22 @@ class IncomingDocumentController extends Controller
 
     return view('incoming.viewer', compact('doc', 'att', 'title', 'pdfUrl'));
    }
+
+   private function nextProtocolNumber(): int
+   {
+    return DB::transaction(function () {
+        $row = DB::table('protocol_counters')->lockForUpdate()->where('id', 1)->first();
+
+        $next = ((int) $row->current) + 1;
+
+        DB::table('protocol_counters')->where('id', 1)->update([
+            'current' => $next,
+            'updated_at' => now(),
+        ]);
+
+        return $next;
+    });
+   }
+
 
 }

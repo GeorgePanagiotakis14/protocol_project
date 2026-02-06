@@ -39,11 +39,21 @@
             <p style="margin-top:10px;">Δεν υπάρχουν συνημμένα.</p>
         @endif
 
-        <div style="margin-top:15px;">
-            <a href="{{ route('incoming.index') }}"
-               style="color:#111; text-decoration:underline;">
-                ← Επιστροφή στα Εισερχόμενα
-            </a>
-        </div>
+       @php
+       $defaultBack = route('incoming.index');
+       $back = $backUrl ?? $defaultBack;
+
+         if (str_contains($back, '/documents/all')) {
+             $text = '← Επιστροφή στα Όλα τα πρωτόκολλα';
+         } else {
+             $text = '← Επιστροφή στα Εισερχόμενα';
+         }
+         @endphp
+
+        <a href="{{ $back }}" style="text-decoration:underline;">
+        {{ $text }}
+        </a>
+
+
     </div>
 </x-app-layout>

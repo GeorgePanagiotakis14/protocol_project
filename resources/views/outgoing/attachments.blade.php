@@ -36,10 +36,21 @@
             <p style="margin-top:10px;">Δεν υπάρχουν συνημμένα.</p>
         @endif
 
-        <div style="margin-top:15px;">
-            <a href="{{ route('outgoing.index') }}" style="color:#111; text-decoration:underline;">
-                ← Επιστροφή στα Εξερχόμενα
-            </a>
-        </div>
+       @php
+        $defaultBack = route('outgoing.index');
+        $back = $backUrl ?? $defaultBack;
+
+         if (str_contains($back, '/documents/all')) {
+             $text = '← Επιστροφή στα Όλα τα πρωτόκολλα';
+         } else {
+             $text = '← Επιστροφή στα Εξερχόμενα';
+         }
+        @endphp
+
+<a href="{{ $back }}" style="text-decoration:underline;">
+    {{ $text }}
+</a>
+
+
     </div>
 </x-app-layout>

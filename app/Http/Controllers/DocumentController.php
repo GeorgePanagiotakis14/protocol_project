@@ -60,51 +60,56 @@ class DocumentController extends Controller
         return view('outgoing.list', compact('files'));
     }
 
-    public function all()
-    {
-        // Όλα τα εισερχόμενα με τα εξερχόμενά τους
-        $incomingDocs = IncomingDocument::with('outgoingReplies')->get();
+   public function all()
+  {
+    // Όλα τα εισερχόμενα με τα εξερχόμενά τους
+    $incomingDocs = IncomingDocument::with(['outgoingReplies' => function ($q) {
+        $q->orderBy('aa', 'asc');
+    }])->get();
 
-        // Όλα τα εξερχόμενα που δεν έχουν εισερχόμενο
-        $orphanOutgoings = OutgoingDocument::whereNull('reply_to_incoming_id')->get();
+    // Όλα τα εξερχόμενα που δεν έχουν εισερχόμενο
+    $orphanOutgoings = OutgoingDocument::whereNull('reply_to_incoming_id')
+        ->orderBy('aa', 'asc')
+        ->get();
 
-        $allDocuments = [];
+    $allDocuments = [];
 
-        // Προσθέτουμε τα εισερχόμενα με τα εξερχόμενά τους
-        foreach($incomingDocs as $in) {
-            $outgoingList = $in->outgoingReplies ?? collect();
-            
-            $allDocuments[] = [
-                'type' => 'incoming',
-                'date' => $in->incoming_date ?? $in->created_at,
-                'incoming' => $in,
-                'outgoing' => $outgoingList
-            ];
-        }
+    // Προσθέτουμε τα εισερχόμενα με τα εξερχόμενά τους
+    foreach ($incomingDocs as $in) {
+        $outgoingList = $in->outgoingReplies ?? collect();
 
-        // Προσθέτουμε τα "μόνο εξερχόμενα" χωρίς εισερχόμενο
-        foreach($orphanOutgoings as $out) {
-            $allDocuments[] = [
-                'type' => 'outgoing',
-                'date' => $out->document_date ?? $out->created_at,
-                'incoming' => null,
-                'outgoing' => collect([$out])
-            ];
-        }
-
-        // Ταξινόμηση όλων κατά ημερομηνία
-        usort($allDocuments, function($a, $b) {
-            return strcmp($a['date'], $b['date']);
-        });
-
-        // Προσθήκη συνεχούς αρίθμησης
-        $documents = [];
-        $counter = 1;
-        foreach($allDocuments as $doc) {
-            $doc['display_aa'] = $counter++;
-            $documents[] = $doc;
-        }
-
-        return view('documents.all', compact('documents'));
+        $allDocuments[] = [
+            'type' => 'incoming',
+            'aa' => (int) $in->aa, // ✅ ΚΥΡΙΟ: πραγματικό Α/Α
+            'incoming' => $in,
+            'outgoing' => $outgoingList,
+        ];
     }
+
+    // Προσθέτουμε τα "μόνο εξερχόμενα" χωρίς εισερχόμενο
+    foreach ($orphanOutgoings as $out) {
+        $allDocuments[] = [
+            'type' => 'outgoing',
+            'aa' => (int) $out->aa, // ✅ ΚΥΡΙΟ: πραγματικό Α/Α
+            'incoming' => null,
+            'outgoing' => collect([$out]),
+        ];
+    }
+
+    // ✅ Ταξινόμηση όλων κατά Α/Α (αύξουσα)
+    usort($allDocuments, function ($a, $b) {
+        return $a['aa'] <=> $b['aa'];
+    });
+
+    // ✅ Το A/A που θα εμφανίζεται στη σελίδα να είναι το πραγματικό Α/Α
+    foreach ($allDocuments as &$doc) {
+        $doc['display_aa'] = $doc['aa'];
+    }
+    unset($doc);
+
+    $documents = $allDocuments;
+
+    return view('documents.all', compact('documents'));
+  }
+
 }

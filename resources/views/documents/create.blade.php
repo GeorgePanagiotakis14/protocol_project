@@ -5,20 +5,23 @@
             Συμπλήρωση Εγγράφων
         </h2>
     </x-slot>
+@php
+    // ✅ ΚΟΙΝΟΣ επόμενος αριθμός πρωτοκόλλου (για εισερχόμενο + ανεξάρτητο εξερχόμενο)
+    $current = (int) (DB::table('protocol_counters')->where('id', 1)->value('current') ?? 0);
+    $nextAa = $current + 1;
 
-    @php
-        // ✅ Επόμενο σειριακό Α/Α (όπως το θέλεις) - ΔΕΝ γράφεται από χρήστη
-        $nextIncomingAa = ((int) (\App\Models\IncomingDocument::max('aa') ?? 0)) + 1;
-        $nextOutgoingAa = ((int) (\App\Models\OutgoingDocument::max('aa') ?? 0)) + 1;
+    // ✅ Και οι 2 φόρμες να δείχνουν το ΙΔΙΟ επόμενο Α/Α
+    $nextIncomingAa = $nextAa;
+    $nextOutgoingAa = $nextAa;
 
-        // ✅ Για αναζήτηση (Επιλογή Β): πληκτρολογείς Α/Α -> βρίσκουμε το ID
-        $incomingPairs = \App\Models\IncomingDocument::orderBy('protocol_number', 'asc')->get(['id', 'protocol_number']);
-        $incomingMap = [];
-        foreach ($incomingPairs as $row) {
-            $incomingMap[(string) $row->protocol_number] = $row->id;
-        }
-        $incomingAaList = $incomingPairs->pluck('protocol_number')->values();
-    @endphp
+    // ✅ Για αναζήτηση (Επιλογή Β): πληκτρολογείς Α/Α -> βρίσκουμε το ID
+    $incomingPairs = \App\Models\IncomingDocument::orderBy('protocol_number', 'asc')->get(['id', 'protocol_number']);
+    $incomingMap = [];
+    foreach ($incomingPairs as $row) {
+        $incomingMap[(string) $row->protocol_number] = $row->id;
+    }
+    $incomingAaList = $incomingPairs->pluck('protocol_number')->values();
+@endphp
 
     <style>
         .doc-page {
@@ -242,6 +245,7 @@
                             id="outgoing_attachments"
                             accept="application/pdf"
                             multiple
+                            required
                             style="display:none"
                         />
 
@@ -263,7 +267,7 @@
                         <div style="border:1px solid red; padding:8px; margin-bottom:10px; color:red;">
                           {{ $errors->getBag('outgoing')->first() }}
                         </div>
-                       @endif
+                    @endif
 
 
                         <button class="save-btn">Αποθήκευση Εξερχομένου</button>

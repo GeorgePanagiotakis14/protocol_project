@@ -73,7 +73,10 @@
                                     <td rowspan="{{ $rowspan }}">{{ $incoming->summary }}</td>
                                     <td rowspan="{{ $rowspan }}" style="text-align:center; white-space:nowrap;">
                                         @if($incoming->attachment_path)
-                                        <a href="{{ route('incoming.attachments.index', $incoming->id) }}">Προβολή</a>
+                                        <a href="{{ route('incoming.attachments.index', $incoming->id) }}?return={{ urlencode(url()->full()) }}">
+                                         Προβολή
+                                        </a>
+
                                         @else
                                             —
                                         @endif
@@ -106,7 +109,10 @@
                                 <td>{{ $out->comments ?? '' }}</td>
                                 <td style="text-align:center; white-space:nowrap;">
                                     @if($out->attachment_path)
-                                   <a href="{{ route('outgoing.attachments.index', $out->id) }}">Προβολή</a>
+                                   <a href="{{ route('outgoing.attachments.index', $out->id) }}?return={{ urlencode(url()->full()) }}">
+                                     Προβολή
+                                    </a>
+
                                     @else
                                        —
                                     @endif

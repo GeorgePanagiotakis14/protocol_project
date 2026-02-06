@@ -41,12 +41,24 @@ class OutgoingDocumentController extends Controller
     unset($data['attachments']);
 
     $document = DB::transaction(function () use ($data) {
-        $aa = (int) $data['protocol_number'];
+        $aa = null;
 
+        // Αν είναι απάντηση -> παίρνει Α/Α από το incoming
+        if (!empty($data['reply_to_incoming_id'])) {
+         $incoming = \App\Models\IncomingDocument::findOrFail($data['reply_to_incoming_id']);
+         $aa = (int) $incoming->aa;
+        } else {
+        // Ανεξάρτητο εξερχόμενο -> παίρνει νέο από κοινό counter
+         $aa = $this->nextProtocolNumber();
+        }
+
+        // γράφουμε σωστά στο record
         return OutgoingDocument::create([
-            ...$data,
+             ...$data,
             'aa' => $aa,
+          'protocol_number' => (string) $aa,
         ]);
+
     });
 
     // ✅ Αποθήκευση ΟΛΩΝ των PDF
@@ -163,12 +175,15 @@ class OutgoingDocumentController extends Controller
         ]);
     }
 
-    public function attachmentsIndex($id)
+    public function attachmentsIndex(Request $request, $id)
     {
-      $doc = OutgoingDocument::with('attachments')->findOrFail($id);
+    $doc = OutgoingDocument::with('attachments')->findOrFail($id);
 
-      return view('outgoing.attachments', compact('doc'));
+    $backUrl = $request->query('return') ?: route('outgoing.index');
+
+    return view('outgoing.attachments', compact('doc', 'backUrl'));
     }
+
 
     public function attachmentsView($id, $attachmentId)
     {
@@ -195,6 +210,22 @@ class OutgoingDocumentController extends Controller
 
     return view('outgoing.viewer', compact('doc', 'att', 'title', 'pdfUrl'));
    }
+   private function nextProtocolNumber(): int
+   {
+    return DB::transaction(function () {
+        $row = DB::table('protocol_counters')->lockForUpdate()->where('id', 1)->first();
+
+        $next = ((int) $row->current) + 1;
+
+        DB::table('protocol_counters')->where('id', 1)->update([
+            'current' => $next,
+            'updated_at' => now(),
+        ]);
+
+        return $next;
+    });
+    }
+
 
 
 }
