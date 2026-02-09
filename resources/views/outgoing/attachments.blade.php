@@ -14,7 +14,7 @@
                     <li style="margin-bottom:8px;">
                         {{ $a->original_name ?? basename($a->path) }}
                         —
-                        <a href="{{ route('outgoing.attachments.viewer', [$doc->id, $a->id]) }}"
+                        <a href="{{ route('outgoing.attachments.viewer', [$doc->id, $a->id]) }}?return={{ urlencode($backUrl ?? url()->previous()) }}"
                            style="color:#2563eb; font-weight:600; text-decoration:underline;">
                             Προβολή
                         </a>
