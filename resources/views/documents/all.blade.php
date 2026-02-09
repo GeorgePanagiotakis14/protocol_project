@@ -1,5 +1,26 @@
 <x-app-layout>
     <h1 style="margin-bottom:20px; text-align: center; font-size:32px; font-weight:bold;">Όλα τα Πρωτόκολλα</h1>
+    
+        {{-- ΦΙΛΤΡΟ + ΕΚΤΥΠΩΣΗ --}}
+    <form method="GET"
+          action="{{ route('documents.print') }}"
+          target="_blank"
+          style="margin-bottom:20px; padding:10px; background:#f3f4f6; border-radius:6px;">
+
+        <label>
+            Από:
+            <input type="date" name="from" required>
+        </label>
+
+        <label style="margin-left:10px;">
+            Έως:
+            <input type="date" name="to" required>
+        </label>
+
+        <button type="submit" name="action" value="print" style="margin-left:15px;">
+            🖨️ Εκτύπωση
+        </button>
+    </form>
 
     <style>
         .divider-col {
@@ -21,6 +42,49 @@
             font-weight: 600;
             text-decoration: underline;
         }
+         @media print {
+            @page {
+                size: A4 landscape;
+                margin: 10mm;
+            }
+
+            body {
+                font-size: 11px;
+            }
+
+            table {
+                width: 100%;
+                table-layout: fixed;
+            }
+
+            th, td {
+                padding: 4px;
+                font-size: 10px;
+                word-wrap: break-word;
+            }
+
+            .divider-col {
+                width: 6px;
+                min-width: 6px;
+                background-color: #1f6feb; /* μπλε */
+                padding: 0;
+            }
+
+            th.divider-col {
+                background-color: #1f6feb;
+                border: none;
+            }
+
+            td.divider-col {
+                border: none;
+            }
+
+
+            a {
+                text-decoration: none;
+                color: black;
+            }
+        }  
     </style>
 
     <div class="card">
@@ -106,8 +170,8 @@
                                 <td>{{ $out->document_date }}</td>
                                 <td>{{ $out->incoming_document_number }}</td>
                                 <td>{{ $out->incoming_protocol }}</td>
-                                <td>{{ $out->comments ?? '' }}</td>
-                                <td style="text-align:center; white-space:nowrap;">
+                                <td>{{ $out->comments }}</td>
+                                <td style="text-align:center;">
                                     @if($out->attachment_path)
                                    <a href="{{ route('outgoing.attachments.index', $out->id) }}?return={{ urlencode(url()->full()) }}">
                                      Προβολή

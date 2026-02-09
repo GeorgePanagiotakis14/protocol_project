@@ -10,11 +10,10 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\AllDocumentsExport;
 use Carbon\Carbon;
 
-
 class DocumentController extends Controller
 {
     public function index()
-    {
+    {   
         return view('menu');
     }
 
@@ -62,59 +61,53 @@ class DocumentController extends Controller
         return view('outgoing.list', compact('files'));
     }
 
-   public function all()
-  {
-    // Όλα τα εισερχόμενα με τα εξερχόμενά τους
-    $incomingDocs = IncomingDocument::with(['outgoingReplies' => function ($q) {
-        $q->orderBy('aa', 'asc');
-    }])->get();
+    public function all()
+    {
+        // Όλα τα εισερχόμενα με τα εξερχόμενά τους
+        $incomingDocs = IncomingDocument::with('outgoingReplies')->get();
 
-    // Όλα τα εξερχόμενα που δεν έχουν εισερχόμενο
-    $orphanOutgoings = OutgoingDocument::whereNull('reply_to_incoming_id')
-        ->orderBy('aa', 'asc')
-        ->get();
+        // Όλα τα εξερχόμενα που δεν έχουν εισερχόμενο
+        $orphanOutgoings = OutgoingDocument::whereNull('reply_to_incoming_id')->get();
 
-    $allDocuments = [];
+        $allDocuments = [];
 
-    // Προσθέτουμε τα εισερχόμενα με τα εξερχόμενά τους
-    foreach ($incomingDocs as $in) {
-        $outgoingList = $in->outgoingReplies ?? collect();
+        foreach($incomingDocs as $in) {
+            $outgoingList = $in->outgoingReplies ?? collect();
+            
+            $allDocuments[] = [
+                'type' => 'incoming',
+                'date' => $in->incoming_date ?? $in->created_at,
+                'incoming' => $in,
+                'outgoing' => $outgoingList
+            ];
+        }
 
-        $allDocuments[] = [
-            'type' => 'incoming',
-            'aa' => (int) $in->aa, // ✅ ΚΥΡΙΟ: πραγματικό Α/Α
-            'incoming' => $in,
-            'outgoing' => $outgoingList,
-        ];
+        foreach($orphanOutgoings as $out) {
+            $allDocuments[] = [
+                'type' => 'outgoing',
+                'date' => $out->document_date ?? $out->created_at,
+                'incoming' => null,
+                'outgoing' => collect([$out])
+            ];
+        }
+
+        usort($allDocuments, function($a, $b) {
+            return strcmp($a['date'], $b['date']);
+        });
+
+        $documents = [];
+        $counter = 1;
+        foreach($allDocuments as $doc) {
+            $doc['display_aa'] = $counter++;
+            $documents[] = $doc;
+        }
+
+        return view('documents.all', compact('documents'));
     }
 
-    // Προσθέτουμε τα "μόνο εξερχόμενα" χωρίς εισερχόμενο
-    foreach ($orphanOutgoings as $out) {
-        $allDocuments[] = [
-            'type' => 'outgoing',
-            'aa' => (int) $out->aa, // ✅ ΚΥΡΙΟ: πραγματικό Α/Α
-            'incoming' => null,
-            'outgoing' => collect([$out]),
-        ];
-    }
+    
 
-    // ✅ Ταξινόμηση όλων κατά Α/Α (αύξουσα)
-    usort($allDocuments, function ($a, $b) {
-        return $a['aa'] <=> $b['aa'];
-    });
-
-    // ✅ Το A/A που θα εμφανίζεται στη σελίδα να είναι το πραγματικό Α/Α
-    foreach ($allDocuments as &$doc) {
-        $doc['display_aa'] = $doc['aa'];
-    }
-    unset($doc);
-
-    $documents = $allDocuments;
-
-    return view('documents.all', compact('documents'));
-  }
-
-  public function print(Request $request)
+    public function print(Request $request)
     {
         $from = Carbon::parse($request->from)->startOfDay();
         $to   = Carbon::parse($request->to)->endOfDay();

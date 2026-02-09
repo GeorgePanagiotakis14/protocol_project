@@ -147,3 +147,6 @@ Route::get('/documents/all', [DocumentController::class, 'all'])
 
 Route::get('incoming/attachment/{id}', [IncomingDocumentController::class, 'downloadAttachment'])->name('incoming.attachment');
 Route::get('outgoing/attachment/{id}', [OutgoingDocumentController::class, 'viewAttachment'])->name('outgoing.attachment');
+
+Route::get('/documents/print', [DocumentController::class, 'print'])
+    ->name('documents.print');
