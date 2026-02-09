@@ -17,6 +17,22 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+    $exceptions->render(function (\Throwable $e, \Illuminate\Http\Request $request) {
+        // Κράτα logs για εμάς
+        logger()->error($e);
+
+        // Σε debug mode άφησέ το default (debug page)
+        if (config('app.debug')) {
+            return null;
+        }
+
+        // ΜΗΝ πειράζεις "κανονικά" HTTP errors (404/403 κλπ)
+        if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {
+            return null;
+        }
+
+        // Για όλα τα υπόλοιπα, δείξε φιλική σελίδα 500
+        return response()->view('errors.generic', [], 500);
+      });
     })
     ->create();
