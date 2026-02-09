@@ -1,5 +1,5 @@
 <x-app-layout>
-    <h1 style="margin-bottom:20px; font-size:32px; font-weight:bold;">Όλα τα Πρωτόκολλα</h1>
+    <h1 style="margin-bottom:20px; text-align: center; font-size:32px; font-weight:bold;">Όλα τα Πρωτόκολλα</h1>
 
     <style>
         .divider-col {

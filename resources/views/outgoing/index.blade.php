@@ -1,13 +1,12 @@
 <x-app-layout>
 
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-3xl text-gray-800 leading-tight">
             Εξερχόμενα Έγγραφα
         </h2>
     </x-slot>
 
     <div class="card">
-        <h2>Εξερχόμενα Έγγραφα</h2>
 
         <table border="1" width="100%" cellpadding="5">
             <thead>

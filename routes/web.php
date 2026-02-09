@@ -100,6 +100,7 @@ Route::middleware(['auth', 'active', 'admin'])
 
         Route::prefix('incoming')->name('incoming.')->group(function () {
         Route::get('/', [IncomingDocumentController::class, 'index'])->name('index');
+        
         Route::get('/{id}/edit', [IncomingDocumentController::class, 'edit'])->name('edit');
         Route::put('/{id}', [IncomingDocumentController::class, 'update'])->name('update');
         });

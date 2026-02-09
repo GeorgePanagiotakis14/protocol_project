@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-3xl text-gray-800 leading-tight">
             Διαχείριση Χρηστών
         </h2>
     </x-slot>
@@ -13,8 +13,8 @@
         @endif
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h3 style="margin:0;">Χρήστες</h3>
-            <a href="{{ route('admin.users.create') }}">+ Νέος Χρήστης</a>
+
+            <a style = " background-color: #1bb97f ; border-radius: 10px; color: white; border: 1px solid #555555;" href="{{ route('admin.users.create') }} ">+ Νέος Χρήστης</a>
         </div>
 
         <table border="1" width="100%" cellpadding="5">

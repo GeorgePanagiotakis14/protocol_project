@@ -17,7 +17,7 @@ class OutgoingDocumentController extends Controller
     }
 
    public function store(Request $request)
-{
+ {
    $validated = $request->validateWithBag('outgoing', [
     'reply_to_incoming_id'      => 'nullable|exists:incoming_documents,id',
 
@@ -97,9 +97,8 @@ class OutgoingDocumentController extends Controller
     audit_log('outgoing', 'create', $document->id);
 
     return redirect()->back()->with('success', 'Το εξερχόμενο καταχωρήθηκε επιτυχώς.');
-}
-
-
+    }
+    
     public function edit($id)
     {
         $document = OutgoingDocument::findOrFail($id);
@@ -108,48 +107,46 @@ class OutgoingDocumentController extends Controller
 
     public function update(Request $request, $id)
     {
-        $validated = $request->validateWithBag([
-            'reply_to_incoming_id'      => 'nullable|exists:incoming_documents,id',
+        $validated = $request->validateWithBag('updateDocument', [
+            'reply_to_incoming_id' => 'nullable|exists:incoming_documents,id',
+            'protocol_number'     => 'required|string',
+            'incoming_protocol'   => 'nullable|string',
+            'incoming_date'       => 'nullable|date',
+            'subject'             => 'nullable|string',
+            'sender'              => 'nullable|string',
+            'document_date'       => 'nullable|date',
+            'summary'             => 'nullable|string',
+            'comments'            => 'nullable|string',
+            'attachment'          => 'nullable|file|mimes:pdf|max:51200',
+            ]);
+    
 
-            'protocol_number'           => 'required|string',
-            'incoming_protocol'         => 'nullable|string',
-            'incoming_date'             => 'nullable|date',
-            'subject'                   => 'nullable|string',
-            'sender'                    => 'nullable|string',
-            'document_date'             => 'nullable|date',
-            'incoming_document_number'  => 'nullable|string',
-            'summary'                   => 'nullable|string',
-            'comments'                  => 'nullable|string',
-
-            // ✅ ΥΠΟΧΡΕΩΤΙΚΟ PDF (ίδιο όπως incoming)
-            'attachment' => 'required|file|mimes:pdf|max:51200',
-
-        ]);
-
-        // ✅ Δεν περνάμε το attachment στο update array
-        $data = $validated;
-        unset($data['attachment']);
-
-        $aa = (int) $data['protocol_number'];
+      
+      
 
         $doc = OutgoingDocument::findOrFail($id);
 
-        $doc->update([
-            ...$data,
-            'aa' => $aa,
-        ]);
+        // αφαιρούμε το attachment από τα δεδομένα
+        $data = $validated;
+        unset($data['attachment']);
 
-        // ✅ Αποθήκευση PDF (αντικατάσταση)
-        $file = $request->file('attachment');
-        $filename = 'outgoing_' . $doc->aa . '_' . now()->format('Ymd_His') . '.pdf';
-        $path = $file->storeAs('outgoing_attachments', $filename, 'public');
+        // αποθήκευση στη βάση
+        $doc->update($data);
 
-        $doc->update(['attachment_path' => $path]);
+        // αν ανέβηκε PDF
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $filename = 'outgoing_' . time() . '.pdf';
+            $path = $file->storeAs('outgoing_attachments', $filename, 'public');
+            $doc->update(['attachment_path' => $path]);
+        }
 
-        audit_log('outgoing', 'update', $id);
-
-        return redirect()->route('outgoing.index')->with('success', 'Το εξερχόμενο ενημερώθηκε.');
+        return redirect()
+            ->route('outgoing.index')
+            ->with('success', 'Το εξερχόμενο ενημερώθηκε.');
+        
     }
+
 
     public function destroy($id)
     {
@@ -225,7 +222,8 @@ class OutgoingDocumentController extends Controller
         return $next;
     });
     }
-
-
-
 }
+
+
+
+

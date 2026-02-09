@@ -1,44 +1,75 @@
 <x-app-layout>
 
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-3xl text-gray-800 leading-tight">
             Κοινή Προβολή Εγγράφων
         </h2>
     </x-slot>
 
     <style>
-        .proto-wrap { padding: 18px 0; overflow-x: auto; }
+        /* Container γύρω από τον πίνακα */
+        .proto-wrap {
+            padding: 18px;
+            overflow-x: auto; /* μόνο αν ο πίνακας είναι μεγαλύτερος από το viewport */
+            background: #fff; /* λευκό πίσω από τον πίνακα */
+        }
+
+        /* Ο πίνακας με ομοιόμορφες γραμμές */
         table.proto {
             border-collapse: collapse;
             border-spacing: 0;
             min-width: 1400px;
             width: 100%;
+            min-width: 1400px; /* αν θέλεις πολύ μεγάλο πίνακα */
+            border: 2px solid #000; /* ίδιο χρώμα με τις εσωτερικές γραμμές */
             background: #fff;
-            font-size: 13px;
         }
         table.proto th, table.proto td {
             border: 1px solid #000;
             padding: 8px 10px;
-            vertical-align: top;
-            white-space: normal;
-            word-break: break-word;
         }
-        table.proto th {
+
+        th, td {
+            border: 2px solid #000; /* έντονες γραμμές για όλα τα κελιά */
+            padding: 8px;
+            vertical-align: top;
+            background: #fff;
+        }
+
+        th {
             font-weight: 700;
             text-align: center;
-            background: #f8fafc;
+            background: #fff;
+            color: #000;
         }
+
+        /* Κάθετη μπλε γραμμή στο κέντρο */
         .divider-col {
             width: 14px;
             min-width: 14px;
             background: #1f6feb; /* “μπλε” σαν το excel bar */
             border-left: 0 !important;
             border-right: 0 !important;
+            background: #1f6feb; /* μπλε χρώμα */
+            border-left: none !important; 
+            border-right: none !important; 
             padding: 0 !important;
         }
-        .num { text-align: center; white-space: nowrap; }
-        .date { text-align: center; white-space: nowrap; }
+
+        td a {
+            color: #2563eb;
+            font-weight: 600;
+            text-decoration: underline;
+        }
     </style>
+
+
+
+
+
+
+
+
 
     <div class="proto-wrap">
         <table class="proto">
