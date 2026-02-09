@@ -1,13 +1,13 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="fw-bold mb-4" style="text-align: center; font-size:2.2rem; text-3xl text-gray-800 leading-tight font-size:2.2rem;">
             Νέος Χρήστης
         </h2>
     </x-slot>
 
-    <div class="card" style="max-width: 700px;">
+    <div class="card" style="max-width:700px; margin:0 auto;">
         @if ($errors->any())
-            <div style="margin-bottom: 15px; color: #b91c1c;">
+            <div style="text-align: center; margin-bottom: 15px; color: #b91c1c;">
                 <ul style="margin:0; padding-left:18px;">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -46,8 +46,8 @@
                 </label>
             </div>
 
-            <button type="submit">Δημιουργία</button>
-            <a href="{{ route('admin.users.index') }}" style="margin-left:10px;">Άκυρο</a>
+            <button type="submit" style="margin-left:10px; padding: 10px 24px; background-color: #3baacf;">Δημιουργία</button>
+            <a href="{{ route('admin.users.index') }}" style="margin-left:10px; padding: 10px 24px; background-color: #d4c2bf;">Άκυρο</a>
         </form>
     </div>
-</x-app-layout>
+</x-app-layout> 

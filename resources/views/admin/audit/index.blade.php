@@ -1,12 +1,14 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-3xl text-gray-800 leading-tight">
+        <h2 class="fw-bold mb-4" style="text-align: center; font-size:2.2rem; text-3xl text-gray-800 leading-tight font-size:2.2rem;">
             Audit Log
         </h2>
     </x-slot>
 
-    <div class="card" style="margin-bottom:20px;">
-        <form method="GET" style="display:flex; gap:15px; align-items:center;">
+    <div class="card" style="margin-bottom:20px; text-align:center;">
+        <form method="GET"
+            style="display:flex; gap:15px; align-items:center; justify-content:center;">
+            
             <label>
                 Ενότητα
                 <select name="section">
@@ -26,9 +28,13 @@
                 </select>
             </label>
 
-            <button type="submit">Εφαρμογή</button>
+            <button type="submit"
+                    style="padding:8px 17px; border:1px solid #555555; border-radius:8px;">
+                Εφαρμογή
+            </button>
         </form>
     </div>
+
 
     <div class="card">
         <table border="1" width="100%" cellpadding="5">

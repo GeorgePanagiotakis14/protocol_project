@@ -9,9 +9,10 @@
     <div class="w-80 h-80 bg-white rounded-lg shadow-lg p-6 flex flex-col justify-between">
 
         <!-- Μήνυμα σύνδεσης (όχι bold) -->
-        <p class="text-black text-center text-base font-normal mb-4 select-none">
-            Συνδεθείτε για να εισέλθετε στο σύστημα.
+        <p class="text-black text-center text-xl font-normal mb-6 select-none">
+            Συνδεθείτε για να εισέλθετε στο σύστημα:
         </p>
+
 
         <!-- Login Form -->
         <form method="POST" action="{{ route('login') }}" class="flex flex-col justify-between h-full">
@@ -63,9 +64,10 @@
             <!-- Submit Button -->
             <div class="flex justify-end mt-4">
                 <x-primary-button class="text-sm px-4 py-2">
-                    Σύνδεση
+                    Συνδεση
                 </x-primary-button>
             </div>
+
         </form>
 
     </div>

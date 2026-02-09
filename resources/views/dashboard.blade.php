@@ -7,7 +7,6 @@
         /* Background εικόνα για όλη τη σελίδα */
         .home-wrapper {
             padding: 40px;
-            position: calc(50% + 40px) center;;
             min-height: 100vh;
             background-image: url('/images/background-protokols.png');
             background-size: cover;
@@ -30,7 +29,7 @@
             z-index: 900;
         }
 
-        /* Πλαίσιο γύρω από τον τίτλο για να ξεχωρίζει */
+        /* Τίτλος */
         .home-title {
             margin-bottom: 40px;
             padding: 25px 30px;
@@ -54,13 +53,14 @@
             line-height: 1.5;
         }
 
-        /* Cards */
+        /* ΚΑΡΤΕΣ: 3 + 2 */
         .home-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 25px;
             width: 100%;
             max-width: 1200px;
+            margin: 0 auto;
         }
 
         .home-card {
@@ -72,7 +72,9 @@
             color: #222;
             transition: all 0.25s ease;
             border-left: 6px solid #2c3e50;
+            width: 100%;
         }
+
 
         .home-card:hover {
             transform: translateY(-6px);
@@ -97,15 +99,28 @@
             color: #888;
             text-align: center;
         }
-        .home-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 25px;
-            width: 100%;
-            max-width: 1200px;
-}
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .home-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .home-card:nth-child(4),
+            .home-card:nth-child(5) {
+                grid-column: auto;
+                justify-self: stretch;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .home-cards {
+                grid-template-columns: 1fr;
+            }
+        }
 
     </style>
+
 
     <div class="home-wrapper">
 

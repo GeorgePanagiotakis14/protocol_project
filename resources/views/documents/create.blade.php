@@ -1,10 +1,6 @@
 <x-app-layout>
 
-    <x-slot name="header">
-        <h2 class="font-semibold text-3xl text-gray-800 leading-tight">
-            Συμπλήρωση Εγγράφων
-        </h2>
-    </x-slot>
+    
 @php
     // ✅ ΚΟΙΝΟΣ επόμενος αριθμός πρωτοκόλλου (για εισερχόμενο + ανεξάρτητο εξερχόμενο)
     $current = (int) (DB::table('protocol_counters')->where('id', 1)->value('current') ?? 0);

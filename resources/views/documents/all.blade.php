@@ -1,12 +1,12 @@
 <x-app-layout>
-    <h1 style="margin-bottom:20px; text-align: center; font-size:32px; font-weight:bold;">Όλα τα Πρωτόκολλα</h1>
+    <h1 style="text-align: center; font-size:2.2rem; text-3xl text-gray-800 leading-tight font-size:2.2rem;">Όλα τα Πρωτόκολλα</h1>
     
         {{-- ΦΙΛΤΡΟ + ΕΚΤΥΠΩΣΗ --}}
     <form method="GET"
           action="{{ route('documents.print') }}"
           target="_blank"
-          style="margin-bottom:20px; padding:10px; background:#f3f4f6; border-radius:6px;">
-
+          style="text-align: center; margin-bottom:20px; padding:10px; background:#f3f4f6; border-radius:6px;">
+ 
         <label>
             Από:
             <input type="date" name="from" required>
@@ -17,7 +17,7 @@
             <input type="date" name="to" required>
         </label>
 
-        <button type="submit" name="action" value="print" style="margin-left:15px;">
+        <button type="submit" name="action" value="print" style="margin-left:15px; padding: 8px 17px; border: 1px solid #555555; border-radius: 8px;">
             🖨️ Εκτύπωση
         </button>
     </form>
