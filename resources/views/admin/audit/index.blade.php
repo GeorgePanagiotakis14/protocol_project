@@ -29,7 +29,7 @@
             </label>
 
             <button type="submit"
-                    style="padding:8px 17px; border:1px solid #555555; border-radius:8px;">
+                    style="padding:8px 17px; border:1px solid rgba(113, 0, 219, 0.73); background: rgba(113, 0, 219, 0.73); border-radius:8px; color: white;">
                 Εφαρμογή
             </button>
         </form>
