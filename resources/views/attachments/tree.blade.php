@@ -35,9 +35,11 @@
 
                                                     @foreach($items as $it)
                                                         @php
-                                                            $viewer = $it['type'] === 'incoming'
+                                                            $baseViewer = $it['type'] === 'incoming'
                                                                 ? route('incoming.attachments.viewer', [$it['doc_id'], $it['attachment_id']])
                                                                 : route('outgoing.attachments.viewer', [$it['doc_id'], $it['attachment_id']]);
+
+                                                            $viewer = $baseViewer . '?return=' . urlencode(url()->full());
                                                         @endphp
 
                                                         <li class="flex flex-col items-start gap-1">
