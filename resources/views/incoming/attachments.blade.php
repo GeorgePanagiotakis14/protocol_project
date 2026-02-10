@@ -14,8 +14,13 @@
                     <li style="margin-bottom:8px;">
                         {{ $a->original_name ?? basename($a->path) }}
                         —
-                        <a href="{{ route('incoming.attachments.viewer', [$doc->id, $a->id]) }}?return={{ urlencode($backUrl ?? url()->previous()) }}"
-                          
+                        @php
+                            $base = route('incoming.attachments.viewer', [$doc->id, $a->id]);
+                            $viewerUrl = (!empty($backUrl) && str_contains($backUrl, '/documents/all'))
+                                ? $base . '?return=' . urlencode($backUrl)
+                                : $base;
+                        @endphp
+                        <a href="{{ $viewerUrl }}"
                            style="color:#2563eb; font-weight:600; text-decoration:underline;">
                             Προβολή
                         </a>
@@ -52,7 +57,6 @@
         <a href="{{ $back }}" style="text-decoration:underline;">
         {{ $text }}
         </a>
-
 
     </div>
 </x-app-layout>

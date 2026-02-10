@@ -16,7 +16,7 @@
         </div>
 
         <div style="margin-top:15px;">
-            <a href="{{ request('return') ?: route('incoming.attachments.index', $doc->id) }}"
+            <a href="{{ route('incoming.attachments.index', $doc->id) }}{{ request('return') ? '?return=' . urlencode(request('return')) : '' }}"
                style="color:#111; text-decoration:underline;">
                 ← Επιστροφή στα Συνημμένα
             </a>
