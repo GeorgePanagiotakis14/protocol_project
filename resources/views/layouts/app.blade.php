@@ -111,6 +111,12 @@
     Όλα τα πρωτόκολλα
     </a>
 
+    <a href="{{ route('attachments.tree') }}" class="{{ request()->routeIs('attachments.tree') ? 'active' : '' }}">
+    Επισυναπτόμενα
+    </a>
+
+
+
 
     @if(auth()->user()?->is_admin)
     <a href="{{ route('admin.audit.index') }}"

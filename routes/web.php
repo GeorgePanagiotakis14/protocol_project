@@ -9,6 +9,7 @@ use App\Http\Controllers\CommonDocumentController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\AttachmentTreeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -84,7 +85,9 @@ Route::middleware(['auth', 'active'])->group(function () {
 
     Route::get('/outgoing/{id}/attachments/{attachmentId}/viewer', [OutgoingDocumentController::class, 'attachmentsViewer'])
     ->name('outgoing.attachments.viewer');
-
+    
+    Route::get('/attachments/tree', [AttachmentTreeController::class, 'index'])
+    ->name('attachments.tree');
 
 });
 
