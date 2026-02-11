@@ -132,7 +132,7 @@
                                 @if($incoming)
                                     <td rowspan="{{ $rowspan }}">{{ $displayAA }}</td>
                                     <td rowspan="{{ $rowspan }}">{{ $incoming->incoming_date }}</td>
-                                    <td rowspan="{{ $rowspan }}">{{ $incoming->protocol_number }}</td>
+                                    <td rowspan="{{ $rowspan }}">{{ $incoming->incoming_protocol }}</td>
                                     <td rowspan="{{ $rowspan }}">{{ $incoming->sender }}</td>
                                     <td rowspan="{{ $rowspan }}">{{ $incoming->subject }}</td>
                                     <td rowspan="{{ $rowspan }}">{{ $incoming->document_date }}</td>
