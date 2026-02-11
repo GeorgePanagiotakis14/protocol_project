@@ -13,10 +13,11 @@
             <tr>
                 <th>Α/Α</th>
                 <th>Αρχή στην οποία απευθύνεται</th>
-                <th>Περίληψη</th>
+                <th>Περίληψη εξερχόμενου εγγράφου</th>
                 <th>Χρονολογία</th>
                 <th>Σχετικοί Αριθμοί</th>
                 <th>Φάκελος Αρχείου</th>
+                <th>Παρατηρήσεις</th>
                 <th>Συνημμένο</th>
                 
                 @auth
@@ -40,6 +41,7 @@
                     <td>{{ $doc->document_date }}</td>
                     <td>{{ $doc->incoming_document_number }}</td>
                     <td>{{ $doc->incoming_protocol }}</td>
+                    <td>{{ $doc->comments}}</td>
 
                     <td style="text-align:center; white-space:nowrap;">
                         @if($doc->attachment_path)
