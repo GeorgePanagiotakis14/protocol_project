@@ -95,18 +95,19 @@
                     <!-- Εισερχόμενα -->
                     <th>Α/Α</th>
                     <th>Ημερομηνία Παραλαβής</th>
-                    <th>Αριθμός Πρωτοκόλλου</th>
+                    <th>Αριθμός εισερχομένου εγγράφου</th>
                     <th>Τόπος που εκδόθηκε</th>
-                    <th>Αρχή που το έκδωσε</th>
-                    <th>Φάκελος Αρχείου</th>
+                    <th>Αρχή που το έχει εκδόσει</th>
+                    <th>Χρονολογία εγγράφου</th>
                     <th>Περίληψη</th>
+                    <th>Φάκελλος αρχείου</th>
                     <th>Συνημμένο</th>
 
                     <th class="divider-col"></th> <!-- μπλε διαχωριστική στήλη -->
 
                     <!-- Εξερχόμενα -->
                     <th>Αρχή στην οποία απευθύνεται</th>
-                    <th>Περίληψη</th>
+                    <th>Περίληψη εξερχόμενου εγγράφου</th>
                     <th>Χρονολογία</th>
                     <th>Σχετικοί Αριθμοί</th>
                     <th>Φάκελος Αρχείου</th>
@@ -132,10 +133,11 @@
                                     <td rowspan="{{ $rowspan }}">{{ $displayAA }}</td>
                                     <td rowspan="{{ $rowspan }}">{{ $incoming->incoming_date }}</td>
                                     <td rowspan="{{ $rowspan }}">{{ $incoming->protocol_number }}</td>
-                                    <td rowspan="{{ $rowspan }}">{{ $incoming->subject }}</td>
                                     <td rowspan="{{ $rowspan }}">{{ $incoming->sender }}</td>
-                                    <td rowspan="{{ $rowspan }}">{{ $incoming->comments }}</td>
+                                    <td rowspan="{{ $rowspan }}">{{ $incoming->subject }}</td>
+                                    <td rowspan="{{ $rowspan }}">{{ $incoming->document_date }}</td>
                                     <td rowspan="{{ $rowspan }}">{{ $incoming->summary }}</td>
+                                    <td rowspan="{{ $rowspan }}">{{ $incoming->comments }}</td>
                                     <td rowspan="{{ $rowspan }}" style="text-align:center; white-space:nowrap;">
                                         @if($incoming->attachment_path)
                                         <a href="{{ route('incoming.attachments.index', $incoming->id) }}?return={{ urlencode(url()->full()) }}">
@@ -150,6 +152,7 @@
                                 @else
                                     {{-- Εξερχόμενο χωρίς εισερχόμενο: Α/Α + κενά --}}
                                     <td>{{ $displayAA }}</td>
+                                    <td></td>
                                     <td></td>
                                     <td></td>
                                     <td></td>

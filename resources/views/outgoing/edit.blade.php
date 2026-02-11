@@ -36,12 +36,12 @@
                    value="{{ $document->incoming_protocol }}"><br><br>
             <br>
 
-            <label>Περίληψη</label><br>
+            <label>Χρονολογία</label><br>
             <input type="date" name="incoming_date"
                    value="{{ $document->incoming_date }}"><br><br>
             <br>
 
-            <label>Χρονολογία</label><br>
+            <label>Περίληψη</label><br>
             <input type="text" name="subject"
                    value="{{ $document->subject }}"><br><br>
             <br>
