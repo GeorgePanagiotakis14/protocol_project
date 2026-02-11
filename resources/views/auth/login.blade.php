@@ -1,9 +1,24 @@
 <x-guest-layout>
 
-    <!-- Τίτλος έξω από πλαίσιο, μεγάλο και λευκό 
-    <h1 class="text-white text-6xl font-bold mb-6 text-center select-none">
-        Σύστημα Διαχείρισης Πρωτοκόλλων
-    </h1> -->
+    <style>
+        .login-logo-fixed{
+            position: fixed;
+            right: 16px;
+            bottom: 16px;
+            width: 120px;
+            height: auto;
+            opacity: 0.9;
+            z-index: 9999;
+            pointer-events: none; /* να μην εμποδίζει click */
+        }
+    </style>
+
+    <!-- ✅ Logo κάτω δεξιά -->
+    <img
+        src="/images/library-sparta-logo.png"
+        alt="Δημόσια Κεντρική Βιβλιοθήκη Σπάρτης"
+        class="login-logo-fixed"
+    >
 
     <!-- Τετράγωνο λευκό πλαίσιο -->
     <div class="w-80 h-80 bg-white rounded-lg shadow-lg p-6 flex flex-col justify-between">
@@ -12,7 +27,6 @@
         <p class="text-black text-center text-xl font-normal mb-6 select-none">
             Συνδεθείτε για να εισέλθετε στο σύστημα:
         </p>
-
 
         <!-- Login Form -->
         <form method="POST" action="{{ route('login') }}" class="flex flex-col justify-between h-full">
@@ -73,3 +87,4 @@
     </div>
 
 </x-guest-layout>
+

@@ -9,6 +9,8 @@ use App\Models\OutgoingDocument;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\AllDocumentsExport;
 use Carbon\Carbon;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 
 
 class DocumentController extends Controller
@@ -62,8 +64,10 @@ class DocumentController extends Controller
         return view('outgoing.list', compact('files'));
     }
 
-   public function all()
-  {
+   public function all(Request $request)
+{
+    $perPage = 20;
+
     // Όλα τα εισερχόμενα με τα εξερχόμενά τους
     $incomingDocs = IncomingDocument::with(['outgoingReplies' => function ($q) {
         $q->orderBy('aa', 'asc');
@@ -76,43 +80,56 @@ class DocumentController extends Controller
 
     $allDocuments = [];
 
-    // Προσθέτουμε τα εισερχόμενα με τα εξερχόμενά τους
     foreach ($incomingDocs as $in) {
         $outgoingList = $in->outgoingReplies ?? collect();
 
         $allDocuments[] = [
             'type' => 'incoming',
-            'aa' => (int) $in->aa, // ✅ ΚΥΡΙΟ: πραγματικό Α/Α
+            'aa' => (int) $in->aa, // πραγματικό Α/Α
             'incoming' => $in,
             'outgoing' => $outgoingList,
         ];
     }
 
-    // Προσθέτουμε τα "μόνο εξερχόμενα" χωρίς εισερχόμενο
     foreach ($orphanOutgoings as $out) {
         $allDocuments[] = [
             'type' => 'outgoing',
-            'aa' => (int) $out->aa, // ✅ ΚΥΡΙΟ: πραγματικό Α/Α
+            'aa' => (int) $out->aa, // πραγματικό Α/Α
             'incoming' => null,
             'outgoing' => collect([$out]),
         ];
     }
 
-    // ✅ Ταξινόμηση όλων κατά Α/Α (αύξουσα)
+    // Ταξινόμηση όλων κατά Α/Α (αύξουσα)
     usort($allDocuments, function ($a, $b) {
         return $a['aa'] <=> $b['aa'];
     });
 
-    // ✅ Το A/A που θα εμφανίζεται στη σελίδα να είναι το πραγματικό Α/Α
     foreach ($allDocuments as &$doc) {
         $doc['display_aa'] = $doc['aa'];
     }
     unset($doc);
 
-    $documents = $allDocuments;
+    // ✅ Pagination πάνω στα GROUPS (όχι στις γραμμές του πίνακα)
+    $page = Paginator::resolveCurrentPage('page');
+    $collection = collect($allDocuments);
+
+    $items = $collection->slice(($page - 1) * $perPage, $perPage)->values();
+
+    $documents = new LengthAwarePaginator(
+        $items,
+        $collection->count(),
+        $perPage,
+        $page,
+        [
+            'path' => $request->url(),
+            'query' => $request->query(), // κρατάει query params
+        ]
+    );
 
     return view('documents.all', compact('documents'));
-  }
+}
+
 
   public function print(Request $request)
     {

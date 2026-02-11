@@ -84,6 +84,7 @@
                 text-decoration: none;
                 color: black;
             }
+            .no-print { display: none !important; }
         }  
     </style>
 
@@ -95,8 +96,8 @@
                     <th>Α/Α</th>
                     <th>Ημερομηνία Παραλαβής</th>
                     <th>Αριθμός Πρωτοκόλλου</th>
-                    <th>Θέμα</th>
                     <th>Τόπος που εκδόθηκε</th>
+                    <th>Αρχή που το έκδωσε</th>
                     <th>Φάκελος Αρχείου</th>
                     <th>Περίληψη</th>
                     <th>Συνημμένο</th>
@@ -198,4 +199,8 @@
             </tbody>
         </table>
     </div>
+    <div class="no-print" style="margin-top: 15px;">
+    {{ $documents->withQueryString()->links() }}
+</div>
+
 </x-app-layout>

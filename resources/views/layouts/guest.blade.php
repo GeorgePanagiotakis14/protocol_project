@@ -9,6 +9,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+
 <body class="min-h-screen flex flex-col items-center justify-center font-sans antialiased"
       style="background: linear-gradient(135deg, #1f2937 0%, #3b82f6 100%); position: relative;">
 
@@ -22,10 +23,22 @@
         {{ $slot }}
     </div>
 
-    <!-- Logo κάτω δεξιά, fixed ώστε να μη χρειάζεται scroll -->
-    <img src="{{ asset('images/library-sparta-logo.png') }}" 
-        alt="Library Sparta Logo" 
-        class="w-16 h-16 fixed bottom-0 right-0 opacity-50 pointer-events-none select-none z-20">
+    <!-- ✅ Logo κάτω δεξιά (fixed) -->
+    <img
+        src="{{ asset('images/library-sparta-logo.png') }}"
+        alt="Library Sparta Logo"
+        style="
+            position: fixed;
+            right: 16px;
+            bottom: 16px;
+            width: 120px;
+            height: auto;
+            opacity: 0.85;
+            z-index: 9999;
+            pointer-events: none;
+            user-select: none;
+        "
+    >
 
 </body>
 </html>
