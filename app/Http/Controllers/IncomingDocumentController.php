@@ -14,7 +14,7 @@ class IncomingDocumentController extends Controller
     {
         $documents = IncomingDocument::withCount('outgoingReplies')
              ->orderBy('aa', 'asc')
-             ->paginate(10);
+             ->paginate(25);
 
         return view('incoming.index', compact('documents'));
     }

@@ -12,7 +12,7 @@ class OutgoingDocumentController extends Controller
 {
     public function index()
     {
-        $documents = OutgoingDocument::orderBy('aa', 'asc')->paginate(10);
+        $documents = OutgoingDocument::orderBy('aa', 'asc')->paginate(25);
         return view('outgoing.index', compact('documents'));
     }
 
