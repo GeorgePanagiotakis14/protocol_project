@@ -1,3 +1,4 @@
+resources/views/documents/common.blade.php
 <x-app-layout>
 
     <x-slot name="header">
@@ -51,8 +52,8 @@
             border-left: 0 !important;
             border-right: 0 !important;
             background: #1f6feb; /* μπλε χρώμα */
-            border-left: none !important; 
-            border-right: none !important; 
+            border-left: none !important;
+            border-right: none !important;
             padding: 0 !important;
         }
 
@@ -62,14 +63,6 @@
             text-decoration: underline;
         }
     </style>
-
-
-
-
-
-
-
-
 
     <div class="proto-wrap">
         <table class="proto">
@@ -84,6 +77,7 @@
                     <th>Χρονολογία εγγράφου</th>
                     <th>Περίληψη</th>
                     <th>Φάκελος αρχείου</th>
+                    <th>Συνημμένο</th>
 
                     <th class="divider-col"></th>
 
@@ -94,6 +88,7 @@
                     <th>Σχετικοί αριθμοί</th>
                     <th>Φάκελος αρχείου</th>
                     <th>Παρατηρήσεις</th>
+                    <th>Συνημμένο</th>
                 </tr>
             </thead>
 
@@ -117,6 +112,16 @@
                                 <td rowspan="{{ $rowspan }}">{{ $incoming->summary }}</td>
                                 <td rowspan="{{ $rowspan }}">{{ $incoming->comments }}</td>
 
+                                <td rowspan="{{ $rowspan }}" style="text-align:center; white-space:nowrap;">
+                                    @if($incoming->attachment_path)
+                                        <a href="{{ route('incoming.attachments.index', $incoming->id) }}?return={{ urlencode(url()->full()) }}">
+                                            Προβολή
+                                        </a>
+                                    @else
+                                        —
+                                    @endif
+                                </td>
+
                                 <td class="divider-col" rowspan="{{ $rowspan }}"></td>
                             @endif
 
@@ -127,11 +132,21 @@
                             <td>{{ $out->incoming_document_number }}</td>
                             <td>{{ $out->incoming_protocol }}</td>
                             <td>{{ $out->comments }}</td>
+
+                            <td style="text-align:center; white-space:nowrap;">
+                                @if($out->attachment_path)
+                                    <a href="{{ route('outgoing.attachments.index', $out->id) }}?return={{ urlencode(url()->full()) }}">
+                                        Προβολή
+                                    </a>
+                                @else
+                                    —
+                                @endif
+                            </td>
                         </tr>
                     @endforeach
                 @empty
                     <tr>
-                        <td colspan="15" style="text-align:center;">Δεν υπάρχουν κοινές εγγραφές.</td>
+                        <td colspan="17" style="text-align:center;">Δεν υπάρχουν κοινές εγγραφές.</td>
                     </tr>
                 @endforelse
             </tbody>
