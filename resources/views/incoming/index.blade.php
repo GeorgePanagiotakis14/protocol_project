@@ -13,19 +13,19 @@
                 <tr>
                     <th>Α/Α</th>
                     <th>Ημερομηνία Παραλαβής</th>
-                    <th>Αριθμός Πρωτοκόλλου</th>
+                    <th>Αριθμός εισερχομένου εγγράφου</th>
                     <th>Τόπος που εκδόθηκε</th>
                     <th>Αρχή που το εξέδωσε</th>
                     <th>Χρονολογία εγγράφου</th>
                     <th>Περίληψη</th>
                     <th>Φάκελος Αρχείου</th>
                     <th>Συνημμένο</th>
-                    @auth
-                    @if(auth()->user()->isAdmin())
-                    <th>Ενέργειες</th>
-                    @endif
-                    @endauth
 
+                    @auth
+                        @if(auth()->user()->isAdmin())
+                            <th>Ενέργειες</th>
+                        @endif
+                    @endauth
                 </tr>
             </thead>
 
@@ -38,15 +38,18 @@
                     >
                         <td>{{ $doc->aa }}</td>
                         <td>{{ $doc->incoming_date }}</td>
-                        <td>{{ $doc->protocol_number }}</td>
+
+                        {{-- ✅ Εδώ αλλάζει: δείχνουμε incoming_protocol αντί για protocol_number --}}
+                        <td>{{ $doc->incoming_protocol }}</td>
+
                         <td>{{ $doc->sender }}</td>
                         <td>{{ $doc->subject }}</td>
                         <td>{{ $doc->document_date }}</td>
                         <td>{{ $doc->summary }}</td>
                         <td>{{ $doc->comments }}</td>
+
                         <td style="text-align:center; white-space:nowrap;">
                             @if($doc->attachment_path)
-
                                 <a href="{{ route('incoming.attachments.index', $doc->id) }}"
                                    style="color:#2563eb; font-weight:600; text-decoration:underline;">
                                     Προβολή
@@ -55,22 +58,23 @@
                                 —
                             @endif
                         </td>
-                        
+
                         @auth
-                           @if(auth()->user()->isAdmin())
-                             <td style="text-align:center;">
-                                  <a href="{{ route('incoming.edit', $doc->id) }}"
-                                   style="color:#16a34a; font-weight:600; text-decoration:underline;">
-                                   Επεξεργασία
-                                  </a>
-                              </td>
-                           @endif
+                            @if(auth()->user()->isAdmin())
+                                <td style="text-align:center;">
+                                    <a href="{{ route('incoming.edit', $doc->id) }}"
+                                       style="color:#16a34a; font-weight:600; text-decoration:underline;">
+                                        Επεξεργασία
+                                    </a>
+                                </td>
+                            @endif
                         @endauth
 
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="9" align="center">Δεν υπάρχουν εγγραφές</td>
+                        {{-- colspan 9 ή 10 ανάλογα αν φαίνεται η στήλη Ενέργειες --}}
+                        <td colspan="10" align="center">Δεν υπάρχουν εγγραφές</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -80,3 +84,4 @@
     </div>
 
 </x-app-layout>
+
