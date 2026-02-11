@@ -5,7 +5,7 @@
     <title>Εκτύπωση Πρωτοκόλλων</title>
     <style>
         body { font-family: DejaVu Sans, sans-serif; }
-        table { width:100%; border-collapse: collapse; font-size:12px; }
+        table { width:84%; border-collapse: collapse; font-size:12px; }
         th, td { border:1px solid #000; padding:4px; vertical-align:top; }
         th { background-color:#f0f0f0; }
         .divider-col { width:10px; background:#1f6feb; }
@@ -23,18 +23,19 @@
             <!-- Εισερχόμενα -->
             <th>Α/Α</th>
             <th>Ημερομηνία Παραλαβής</th>
-            <th>Αριθμός Πρωτοκόλλου</th>
-            <th>Θέμα</th>
+            <th>Αριθμός εισερχομένου εγγράφου</th>
             <th>Τόπος που εκδόθηκε</th>
-            <th>Φάκελος Αρχείου</th>
+            <th>Αρχή που το έχει εκδόσει</th>
+            <th>Χρονολογία εγγράφου</th>
             <th>Περίληψη</th>
+            <th>Φάκελλος αρχείου</th>
             <th>Συνημμένο</th>
 
             <th class="divider-col"></th>
 
             <!-- Εξερχόμενα -->
             <th>Αρχή στην οποία απευθύνεται</th>
-            <th>Περίληψη</th>
+            <th>Περίληψη εξερχομένου εγγράφου</th>
             <th>Χρονολογία</th>
             <th>Σχετικοί Αριθμοί</th>
             <th>Φάκελος Αρχείου</th>
@@ -57,10 +58,11 @@
                         <td rowspan="{{ $rowspan }}">{{ $doc['display_aa'] ?? '' }}</td>
                         <td rowspan="{{ $rowspan }}">{{ $incoming->incoming_date ?? '' }}</td>
                         <td rowspan="{{ $rowspan }}">{{ $incoming->protocol_number ?? '' }}</td>
-                        <td rowspan="{{ $rowspan }}">{{ $incoming->subject ?? '' }}</td>
                         <td rowspan="{{ $rowspan }}">{{ $incoming->sender ?? '' }}</td>
-                        <td rowspan="{{ $rowspan }}">{{ $incoming->comments ?? '' }}</td>
+                        <td rowspan="{{ $rowspan }}">{{ $incoming->subject ?? '' }}</td>
+                        <td rowspan="{{ $rowspan }}">{{ $incoming->document_date ?? '' }}</td>
                         <td rowspan="{{ $rowspan }}">{{ $incoming->summary ?? '' }}</td>
+                        <td rowspan="{{ $rowspan }}">{{ $incoming->comments ?? '' }}</td>
                         <td rowspan="{{ $rowspan }}" style="text-align:center;">
                             {{ $incoming?->attachment_path ? 'Ναι' : '' }}
                         </td>
