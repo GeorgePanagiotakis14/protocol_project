@@ -1,3 +1,4 @@
+resources/views/outgoing/attachements.blade.php
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
@@ -16,7 +17,7 @@
                         —
                         @php
                             $base = route('outgoing.attachments.viewer', [$doc->id, $a->id]);
-                            $viewerUrl = (!empty($backUrl) && str_contains($backUrl, '/documents/all'))
+                            $viewerUrl = (!empty($backUrl) && (str_contains($backUrl, '/documents/all') || str_contains($backUrl, '/documents/common')))
                                 ? $base . '?return=' . urlencode($backUrl)
                                 : $base;
                         @endphp
@@ -42,15 +43,17 @@
             <p style="margin-top:10px;">Δεν υπάρχουν συνημμένα.</p>
         @endif
 
-       @php
+        @php
         $defaultBack = route('outgoing.index');
         $back = $backUrl ?? $defaultBack;
 
-         if (str_contains($back, '/documents/all')) {
-             $text = '← Επιστροφή στα Όλα τα πρωτόκολλα';
-         } else {
-             $text = '← Επιστροφή στα Εξερχόμενα';
-         }
+        if (str_contains($back, '/documents/common')) {
+            $text = '← Επιστροφή στα Κοινά';
+        } elseif (str_contains($back, '/documents/all')) {
+            $text = '← Επιστροφή στα Όλα τα Πρωτόκολλα';
+        } else {
+            $text = '← Επιστροφή στα Εξερχόμενα';
+        }
         @endphp
 
         <a href="{{ $back }}" style="text-decoration:underline;">
