@@ -26,7 +26,7 @@ Route::get('/', function () {
 | Authenticated area
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'active'])->group(function () {
+Route::middleware(['auth', 'active', 'protocolYear'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])
@@ -59,36 +59,33 @@ Route::middleware(['auth', 'active'])->group(function () {
     // Common (Incoming ↔ Outgoing)
     Route::get('/documents/common', [CommonDocumentController::class, 'index'])
         ->name('documents.common');
-    
+
     Route::get('/incoming/{id}/attachment', [IncomingDocumentController::class, 'downloadAttachment'])
-    ->name('incoming.attachment');
+        ->name('incoming.attachment');
 
     Route::get('/incoming/{id}/attachments', [IncomingDocumentController::class, 'attachmentsIndex'])
-    ->name('incoming.attachments.index');
+        ->name('incoming.attachments.index');
 
     Route::get('/incoming/{id}/attachments/{attachmentId}', [IncomingDocumentController::class, 'attachmentsView'])
-    ->name('incoming.attachments.view');
- 
+        ->name('incoming.attachments.view');
+
     Route::get('/incoming/{id}/attachments/{attachmentId}/viewer', [IncomingDocumentController::class, 'attachmentsViewer'])
-    ->name('incoming.attachments.viewer');
-
-
+        ->name('incoming.attachments.viewer');
 
     Route::get('/outgoing/{id}/attachment', [OutgoingDocumentController::class, 'viewAttachment'])
-    ->name('outgoing.attachment');
+        ->name('outgoing.attachment');
 
     Route::get('/outgoing/{id}/attachments', [OutgoingDocumentController::class, 'attachmentsIndex'])
-     ->name('outgoing.attachments.index');
+        ->name('outgoing.attachments.index');
 
     Route::get('/outgoing/{id}/attachments/{attachmentId}', [OutgoingDocumentController::class, 'attachmentsView'])
-    ->name('outgoing.attachments.view');
+        ->name('outgoing.attachments.view');
 
     Route::get('/outgoing/{id}/attachments/{attachmentId}/viewer', [OutgoingDocumentController::class, 'attachmentsViewer'])
-    ->name('outgoing.attachments.viewer');
-    
-    Route::get('/attachments/tree', [AttachmentTreeController::class, 'index'])
-    ->name('attachments.tree');
+        ->name('outgoing.attachments.viewer');
 
+    Route::get('/attachments/tree', [AttachmentTreeController::class, 'index'])
+        ->name('attachments.tree');
 });
 
 /*
@@ -96,24 +93,23 @@ Route::middleware(['auth', 'active'])->group(function () {
 | Admin area (SUPERUSER ONLY)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'active', 'admin'])
+Route::middleware(['auth', 'active', 'admin', 'protocolYear'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
 
         Route::prefix('incoming')->name('incoming.')->group(function () {
-        Route::get('/', [IncomingDocumentController::class, 'index'])->name('index');
-        
-        Route::get('/{id}/edit', [IncomingDocumentController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [IncomingDocumentController::class, 'update'])->name('update');
+            Route::get('/', [IncomingDocumentController::class, 'index'])->name('index');
+
+            Route::get('/{id}/edit', [IncomingDocumentController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [IncomingDocumentController::class, 'update'])->name('update');
         });
 
         Route::prefix('outgoing')->name('outgoing.')->group(function () {
-        Route::get('/', [OutgoingDocumentController::class, 'index'])->name('index');
-        Route::get('/outgoing/{id}/edit', [OutgoingDocumentController::class, 'edit'])->name('outgoing.edit');
-        Route::put('/{id}', [OutgoingDocumentController::class, 'update'])->name('update');
+            Route::get('/', [OutgoingDocumentController::class, 'index'])->name('index');
+            Route::get('/outgoing/{id}/edit', [OutgoingDocumentController::class, 'edit'])->name('outgoing.edit');
+            Route::put('/{id}', [OutgoingDocumentController::class, 'update'])->name('update');
         });
-
 
         // Users management
         Route::get('/users', [UserManagementController::class, 'index'])
@@ -146,10 +142,12 @@ Route::middleware(['auth', 'active', 'admin'])
 require __DIR__.'/auth.php';
 
 Route::get('/documents/all', [DocumentController::class, 'all'])
+    ->middleware(['auth', 'active', 'protocolYear'])
     ->name('documents.all');
 
 Route::get('incoming/attachment/{id}', [IncomingDocumentController::class, 'downloadAttachment'])->name('incoming.attachment');
 Route::get('outgoing/attachment/{id}', [OutgoingDocumentController::class, 'viewAttachment'])->name('outgoing.attachment');
 
 Route::get('/documents/print', [DocumentController::class, 'print'])
+    ->middleware(['auth', 'active', 'protocolYear'])
     ->name('documents.print');

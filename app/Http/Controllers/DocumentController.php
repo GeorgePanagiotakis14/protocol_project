@@ -12,7 +12,6 @@ use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 
-
 class DocumentController extends Controller
 {
     public function index()
@@ -64,85 +63,93 @@ class DocumentController extends Controller
         return view('outgoing.list', compact('files'));
     }
 
-   public function all(Request $request)
-{
-    $perPage = 20;
+    public function all(Request $request)
+    {
+        $perPage = 20;
 
-    // Όλα τα εισερχόμενα με τα εξερχόμενά τους
-    $incomingDocs = IncomingDocument::with(['outgoingReplies' => function ($q) {
-        $q->orderBy('aa', 'asc');
-    }])->get();
+        $selectedYear = (int) session('protocol_year', now()->year);
 
-    // Όλα τα εξερχόμενα που δεν έχουν εισερχόμενο
-    $orphanOutgoings = OutgoingDocument::whereNull('reply_to_incoming_id')
-        ->orderBy('aa', 'asc')
+        // Όλα τα εισερχόμενα με τα εξερχόμενά τους (ΤΟΥ ΕΠΙΛΕΓΜΕΝΟΥ ΕΤΟΥΣ)
+        $incomingDocs = IncomingDocument::with(['outgoingReplies' => function ($q) {
+            $q->orderBy('aa', 'asc');
+        }])
+        ->where('protocol_year', $selectedYear)
         ->get();
 
-    $allDocuments = [];
+        // Όλα τα εξερχόμενα που δεν έχουν εισερχόμενο (ΤΟΥ ΕΠΙΛΕΓΜΕΝΟΥ ΕΤΟΥΣ)
+        $orphanOutgoings = OutgoingDocument::whereNull('reply_to_incoming_id')
+            ->where('protocol_year', $selectedYear)
+            ->orderBy('aa', 'asc')
+            ->get();
 
-    foreach ($incomingDocs as $in) {
-        $outgoingList = $in->outgoingReplies ?? collect();
+        $allDocuments = [];
 
-        $allDocuments[] = [
-            'type' => 'incoming',
-            'aa' => (int) $in->aa, // πραγματικό Α/Α
-            'incoming' => $in,
-            'outgoing' => $outgoingList,
-        ];
+        foreach ($incomingDocs as $in) {
+            $outgoingList = $in->outgoingReplies ?? collect();
+
+            $allDocuments[] = [
+                'type' => 'incoming',
+                'aa' => (int) $in->aa, // πραγματικό Α/Α
+                'incoming' => $in,
+                'outgoing' => $outgoingList,
+            ];
+        }
+
+        foreach ($orphanOutgoings as $out) {
+            $allDocuments[] = [
+                'type' => 'outgoing',
+                'aa' => (int) $out->aa, // πραγματικό Α/Α
+                'incoming' => null,
+                'outgoing' => collect([$out]),
+            ];
+        }
+
+        // Ταξινόμηση όλων κατά Α/Α (αύξουσα)
+        usort($allDocuments, function ($a, $b) {
+            return $a['aa'] <=> $b['aa'];
+        });
+
+        foreach ($allDocuments as &$doc) {
+            $doc['display_aa'] = $doc['aa'];
+        }
+        unset($doc);
+
+        // ✅ Pagination πάνω στα GROUPS (όχι στις γραμμές του πίνακα)
+        $page = Paginator::resolveCurrentPage('page');
+        $collection = collect($allDocuments);
+
+        $items = $collection->slice(($page - 1) * $perPage, $perPage)->values();
+
+        $documents = new LengthAwarePaginator(
+            $items,
+            $collection->count(),
+            $perPage,
+            $page,
+            [
+                'path' => $request->url(),
+                'query' => $request->query(), // κρατάει query params
+            ]
+        );
+
+        return view('documents.all', compact('documents'));
     }
 
-    foreach ($orphanOutgoings as $out) {
-        $allDocuments[] = [
-            'type' => 'outgoing',
-            'aa' => (int) $out->aa, // πραγματικό Α/Α
-            'incoming' => null,
-            'outgoing' => collect([$out]),
-        ];
-    }
-
-    // Ταξινόμηση όλων κατά Α/Α (αύξουσα)
-    usort($allDocuments, function ($a, $b) {
-        return $a['aa'] <=> $b['aa'];
-    });
-
-    foreach ($allDocuments as &$doc) {
-        $doc['display_aa'] = $doc['aa'];
-    }
-    unset($doc);
-
-    // ✅ Pagination πάνω στα GROUPS (όχι στις γραμμές του πίνακα)
-    $page = Paginator::resolveCurrentPage('page');
-    $collection = collect($allDocuments);
-
-    $items = $collection->slice(($page - 1) * $perPage, $perPage)->values();
-
-    $documents = new LengthAwarePaginator(
-        $items,
-        $collection->count(),
-        $perPage,
-        $page,
-        [
-            'path' => $request->url(),
-            'query' => $request->query(), // κρατάει query params
-        ]
-    );
-
-    return view('documents.all', compact('documents'));
-}
-
-
-  public function print(Request $request)
+    public function print(Request $request)
     {
         $from = Carbon::parse($request->from)->startOfDay();
         $to   = Carbon::parse($request->to)->endOfDay();
 
-        // Εισερχόμενα στο range
+        $selectedYear = (int) session('protocol_year', now()->year);
+
+        // Εισερχόμενα στο range (ΤΟΥ ΕΠΙΛΕΓΜΕΝΟΥ ΕΤΟΥΣ)
         $incomingDocs = IncomingDocument::with('outgoingReplies')
+            ->where('protocol_year', $selectedYear)
             ->whereBetween('incoming_date', [$from, $to])
             ->get();
 
-        // Εξερχόμενα χωρίς εισερχόμενο στο range
+        // Εξερχόμενα χωρίς εισερχόμενο στο range (ΤΟΥ ΕΠΙΛΕΓΜΕΝΟΥ ΕΤΟΥΣ)
         $orphanOutgoings = OutgoingDocument::whereNull('reply_to_incoming_id')
+            ->where('protocol_year', $selectedYear)
             ->whereBetween('document_date', [$from, $to])
             ->get();
 
@@ -180,5 +187,4 @@ class DocumentController extends Controller
         // Μόνο εκτύπωση browser, χωρίς PDF
         return view('documents.print', compact('documents', 'from', 'to'));
     }
-
 }

@@ -23,6 +23,8 @@ class IncomingDocument extends Model
         'summary',
         'comments',
         'attachment_path',
+        'protocol_year',
+
     ];
 
     public function outgoingReplies(): HasMany

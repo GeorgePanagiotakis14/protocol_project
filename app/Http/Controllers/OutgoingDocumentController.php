@@ -12,93 +12,102 @@ class OutgoingDocumentController extends Controller
 {
     public function index()
     {
-        $documents = OutgoingDocument::orderBy('aa', 'asc')->paginate(25);
+        $year = (int) session('protocol_year', now()->year);
+
+        $documents = OutgoingDocument::where('protocol_year', $year)
+            ->orderBy('aa', 'asc')
+            ->paginate(25)
+            ->withQueryString();
+
         return view('outgoing.index', compact('documents'));
     }
 
-   public function store(Request $request)
- {
-   $validated = $request->validateWithBag('outgoing', [
-    'reply_to_incoming_id'      => 'nullable|exists:incoming_documents,id',
+    public function store(Request $request)
+    {
+        $validated = $request->validateWithBag('outgoing', [
+            'reply_to_incoming_id'      => 'nullable|exists:incoming_documents,id',
 
-    'protocol_number'           => 'required|string',
-    'incoming_protocol'         => 'nullable|string',
-    'incoming_date'             => 'nullable|date',
-    'subject'                   => 'nullable|string',
-    'sender'                    => 'nullable|string',
-    'document_date'             => 'nullable|date',
-    'incoming_document_number'  => 'nullable|string',
-    'summary'                   => 'nullable|string',
-    'comments'                  => 'nullable|string',
+            'protocol_number'           => 'required|string',
+            'incoming_protocol'         => 'nullable|string',
+            'incoming_date'             => 'nullable|date',
+            'subject'                   => 'nullable|string',
+            'sender'                    => 'nullable|string',
+            'document_date'             => 'nullable|date',
+            'incoming_document_number'  => 'nullable|string',
+            'summary'                   => 'nullable|string',
+            'comments'                  => 'nullable|string',
 
-    'attachments'               => 'required|array|min:1',
-    'attachments.*'             => 'file|mimes:pdf|max:51200',
-    ]);
-
-
-    // ✅ Δεν περνάμε τα attachments στο create
-    $data = $validated;
-    unset($data['attachments']);
-
-    $document = DB::transaction(function () use ($data) {
-        $aa = null;
-
-        // Αν είναι απάντηση -> παίρνει Α/Α από το incoming
-        if (!empty($data['reply_to_incoming_id'])) {
-         $incoming = \App\Models\IncomingDocument::findOrFail($data['reply_to_incoming_id']);
-         $aa = (int) $incoming->aa;
-        } else {
-        // Ανεξάρτητο εξερχόμενο -> παίρνει νέο από κοινό counter
-         $aa = $this->nextProtocolNumber();
-        }
-
-        // γράφουμε σωστά στο record
-        return OutgoingDocument::create([
-             ...$data,
-            'aa' => $aa,
-          'protocol_number' => (string) $aa,
+            'attachments'               => 'required|array|min:1',
+            'attachments.*'             => 'file|mimes:pdf|max:51200',
         ]);
 
-    });
+        $selectedYear = (int) session('protocol_year', now()->year);
 
-    // ✅ Αποθήκευση ΟΛΩΝ των PDF
-    $files = $request->file('attachments');
+        // ✅ Δεν περνάμε τα attachments στο create
+        $data = $validated;
+        unset($data['attachments']);
 
-    // Folder date: ίδια λογική με πριν (αν έχει incoming_date αλλιώς now)
-    $date = $document->incoming_date
-        ? Carbon::parse($document->incoming_date)
-        : now();
+        $document = DB::transaction(function () use ($data, $selectedYear) {
+            $aa = null;
+            $yearToSave = $selectedYear;
 
-    $year = $date->format('Y');
-    $folderDate = $date->format('Y-m-d');
+            // Αν είναι απάντηση -> παίρνει Α/Α από το incoming + ίδιο protocol_year με το incoming
+            if (!empty($data['reply_to_incoming_id'])) {
+                $incoming = \App\Models\IncomingDocument::findOrFail($data['reply_to_incoming_id']);
+                $aa = (int) $incoming->aa;
+                $yearToSave = (int) ($incoming->protocol_year ?? $selectedYear);
+            } else {
+                // Ανεξάρτητο εξερχόμενο -> παίρνει νέο από counter του επιλεγμένου έτους
+                $aa = $this->nextProtocolNumber($selectedYear);
+            }
 
-    foreach ($files as $i => $file) {
-        $filename = 'outgoing_' . $document->aa . '_' . now()->format('His') . '_' . ($i + 1) . '.pdf';
+            // γράφουμε σωστά στο record
+            return OutgoingDocument::create([
+                ...$data,
+                'protocol_year' => $yearToSave,
+                'aa' => $aa,
+                'protocol_number' => (string) $aa,
+            ]);
+        });
 
-        $path = $file->storeAs(
-            "{$year}/outgoing/{$folderDate}",
-            $filename,
-            'public'
-        );
+        // ✅ Αποθήκευση ΟΛΩΝ των PDF
+        $files = $request->file('attachments');
 
-        // ✅ γράφει στο νέο table outgoing_document_attachments
-        $document->attachments()->create([
-            'path' => $path,
-            'original_name' => $file->getClientOriginalName(),
-            'size' => $file->getSize(),
-        ]);
+        // Folder date: ίδια λογική με πριν (αν έχει incoming_date αλλιώς now)
+        $date = $document->incoming_date
+            ? Carbon::parse($document->incoming_date)
+            : now();
 
-        // ✅ backward compatibility: το 1ο γράφεται και στο attachment_path
-        if ($i === 0) {
-            $document->update(['attachment_path' => $path]);
+        $year = $date->format('Y');
+        $folderDate = $date->format('Y-m-d');
+
+        foreach ($files as $i => $file) {
+            $filename = 'outgoing_' . $document->aa . '_' . now()->format('His') . '_' . ($i + 1) . '.pdf';
+
+            $path = $file->storeAs(
+                "{$year}/outgoing/{$folderDate}",
+                $filename,
+                'public'
+            );
+
+            // ✅ γράφει στο νέο table outgoing_document_attachments
+            $document->attachments()->create([
+                'path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+                'size' => $file->getSize(),
+            ]);
+
+            // ✅ backward compatibility: το 1ο γράφεται και στο attachment_path
+            if ($i === 0) {
+                $document->update(['attachment_path' => $path]);
+            }
         }
+
+        audit_log('outgoing', 'create', $document->id);
+
+        return redirect()->back()->with('success', 'Το εξερχόμενο καταχωρήθηκε επιτυχώς.');
     }
 
-    audit_log('outgoing', 'create', $document->id);
-
-    return redirect()->back()->with('success', 'Το εξερχόμενο καταχωρήθηκε επιτυχώς.');
-    }
-    
     public function edit($id)
     {
         $document = OutgoingDocument::findOrFail($id);
@@ -118,11 +127,7 @@ class OutgoingDocumentController extends Controller
             'summary'             => 'nullable|string',
             'comments'            => 'nullable|string',
             'attachment'          => 'nullable|file|mimes:pdf|max:51200',
-            ]);
-    
-
-      
-      
+        ]);
 
         $doc = OutgoingDocument::findOrFail($id);
 
@@ -144,9 +149,7 @@ class OutgoingDocumentController extends Controller
         return redirect()
             ->route('outgoing.index')
             ->with('success', 'Το εξερχόμενο ενημερώθηκε.');
-        
     }
-
 
     public function destroy($id)
     {
@@ -174,13 +177,12 @@ class OutgoingDocumentController extends Controller
 
     public function attachmentsIndex(Request $request, $id)
     {
-    $doc = OutgoingDocument::with('attachments')->findOrFail($id);
+        $doc = OutgoingDocument::with('attachments')->findOrFail($id);
 
-    $backUrl = $request->query('return') ?: route('outgoing.index');
+        $backUrl = $request->query('return') ?: route('outgoing.index');
 
-    return view('outgoing.attachments', compact('doc', 'backUrl'));
+        return view('outgoing.attachments', compact('doc', 'backUrl'));
     }
-
 
     public function attachmentsView($id, $attachmentId)
     {
@@ -194,36 +196,51 @@ class OutgoingDocumentController extends Controller
             'Content-Type' => 'application/pdf',
         ]);
     }
+
     public function attachmentsViewer($id, $attachmentId)
-   {
-    $doc = \App\Models\OutgoingDocument::findOrFail($id);
-    $att = $doc->attachments()->findOrFail($attachmentId);
+    {
+        $doc = \App\Models\OutgoingDocument::findOrFail($id);
+        $att = $doc->attachments()->findOrFail($attachmentId);
 
-    // Τίτλος καρτέλας (σωστός)
-    $title = $att->original_name ?: ('outgoing_' . $doc->aa . '.pdf');
+        // Τίτλος καρτέλας (σωστός)
+        $title = $att->original_name ?: ('outgoing_' . $doc->aa . '.pdf');
 
-    // Το PDF συνεχίζει να σερβίρεται από το υπάρχον route outgoing.attachments.view
-    $pdfUrl = route('outgoing.attachments.view', [$doc->id, $att->id]);
+        // Το PDF συνεχίζει να σερβίρεται από το υπάρχον route outgoing.attachments.view
+        $pdfUrl = route('outgoing.attachments.view', [$doc->id, $att->id]);
 
-    return view('outgoing.viewer', compact('doc', 'att', 'title', 'pdfUrl'));
-   }
-   private function nextProtocolNumber(): int
-   {
-    return DB::transaction(function () {
-        $row = DB::table('protocol_counters')->lockForUpdate()->where('id', 1)->first();
+        return view('outgoing.viewer', compact('doc', 'att', 'title', 'pdfUrl'));
+    }
 
-        $next = ((int) $row->current) + 1;
+    private function nextProtocolNumber(int $year): int
+    {
+        return DB::transaction(function () use ($year) {
+            $row = DB::table('protocol_counters')
+                ->where('year', $year)
+                ->lockForUpdate()
+                ->first();
 
-        DB::table('protocol_counters')->where('id', 1)->update([
-            'current' => $next,
-            'updated_at' => now(),
-        ]);
+            if (!$row) {
+                DB::table('protocol_counters')->insert([
+                    'year' => $year,
+                    'current' => 0,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
 
-        return $next;
-    });
+                $row = DB::table('protocol_counters')
+                    ->where('year', $year)
+                    ->lockForUpdate()
+                    ->first();
+            }
+
+            $next = ((int) $row->current) + 1;
+
+            DB::table('protocol_counters')->where('year', $year)->update([
+                'current' => $next,
+                'updated_at' => now(),
+            ]);
+
+            return $next;
+        });
     }
 }
-
-
-
-

@@ -21,6 +21,8 @@ class OutgoingDocument extends Model
         'summary',
         'comments',
         'attachment_path',
+        'protocol_year',
+
 
 
         // ✅ Απάντηση σε εισερχόμενο (nullable)

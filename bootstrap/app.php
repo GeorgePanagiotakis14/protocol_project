@@ -12,8 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'admin' => \App\Http\Middleware\AdminOnly::class,
-            'active' => \App\Http\Middleware\EnsureUserIsActive::class,
+        'admin' => \App\Http\Middleware\AdminOnly::class,
+        'active' => \App\Http\Middleware\EnsureUserIsActive::class,
+        'protocolYear' => \App\Http\Middleware\SetProtocolYear::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

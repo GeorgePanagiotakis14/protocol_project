@@ -1,6 +1,6 @@
 <x-app-layout>
     <h1 style="text-align: center; font-size:2.2rem; text-3xl text-gray-800 leading-tight font-size:2.2rem;">Όλα τα Πρωτόκολλα</h1>
-    
+     @include('partials.protocol-year-selector')
         {{-- ΦΙΛΤΡΟ + ΕΚΤΥΠΩΣΗ --}}
     <form method="GET"
           action="{{ route('documents.print') }}"
@@ -16,6 +16,8 @@
             Έως:
             <input type="date" name="to" required>
         </label>
+
+        <input type="hidden" name="year" value="{{ $selectedYear ?? now()->year }}">
 
         <button type="submit" name="action" value="print" style="margin-left:15px; padding: 8px 17px; border: 1px solid rgba(113, 0, 219, 0.73); border-radius: 8px; background: rgba(113, 0, 219, 0.73); color:white;">
             🖨️ Εκτύπωση

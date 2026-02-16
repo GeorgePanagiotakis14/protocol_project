@@ -6,6 +6,7 @@ resources/views/documents/common.blade.php
             Κοινή Προβολή Εγγράφων
         </h2>
     </x-slot>
+    @include('partials.protocol-year-selector')
 
     <style>
         /* Container γύρω από τον πίνακα */
@@ -153,6 +154,7 @@ resources/views/documents/common.blade.php
         </table>
     </div>
 
-    {{ $incomingGroups->links() }}
+    {{ $incomingGroups->appends(request()->query())->links() }}
+
 
 </x-app-layout>

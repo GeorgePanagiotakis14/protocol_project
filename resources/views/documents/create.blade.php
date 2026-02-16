@@ -2,16 +2,22 @@
 
     
 @php
-    // ✅ ΚΟΙΝΟΣ επόμενος αριθμός πρωτοκόλλου (για εισερχόμενο + ανεξάρτητο εξερχόμενο)
-    $current = (int) (DB::table('protocol_counters')->where('id', 1)->value('current') ?? 0);
+    // ✅ Επιλεγμένο έτος από middleware (ή τρέχον αν δεν υπάρχει)
+    $selectedYear = isset($selectedYear) ? (int) $selectedYear : (int) now()->year;
+
+    // ✅ ΚΟΙΝΟΣ επόμενος αριθμός πρωτοκόλλου (για εισερχόμενο + ανεξάρτητο εξερχόμενο) ΑΝΑ ΕΤΟΣ
+    $current = (int) (DB::table('protocol_counters')->where('year', $selectedYear)->value('current') ?? 0);
     $nextAa = $current + 1;
 
     // ✅ Και οι 2 φόρμες να δείχνουν το ΙΔΙΟ επόμενο Α/Α
     $nextIncomingAa = $nextAa;
     $nextOutgoingAa = $nextAa;
 
-    // ✅ Για αναζήτηση (Επιλογή Β): πληκτρολογείς Α/Α -> βρίσκουμε το ID
-    $incomingPairs = \App\Models\IncomingDocument::orderBy('protocol_number', 'asc')->get(['id', 'protocol_number']);
+    // ✅ Για αναζήτηση (Επιλογή Β): πληκτρολογείς Α/Α -> βρίσκουμε το ID (ΜΟΝΟ του επιλεγμένου έτους)
+    $incomingPairs = \App\Models\IncomingDocument::where('protocol_year', $selectedYear)
+        ->orderBy('protocol_number', 'asc')
+        ->get(['id', 'protocol_number']);
+
     $incomingMap = [];
     foreach ($incomingPairs as $row) {
         $incomingMap[(string) $row->protocol_number] = $row->id;
@@ -107,6 +113,9 @@
                     Συμπλήρωση Εγγράφων
                 </h2>
             </div>
+
+            {{-- ✅ ΕΠΙΛΟΓΗ ΕΤΟΥΣ (μία γραμμή, χωρίς άλλη αλλαγή) --}}
+            @include('partials.protocol-year-selector')
 
             <div class="doc-wrapper">
 

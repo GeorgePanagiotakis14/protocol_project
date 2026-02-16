@@ -5,6 +5,7 @@
             Εισερχόμενα Έγγραφα
         </h2>
     </x-slot>
+    @include('partials.protocol-year-selector')
 
     <div class="card">
 
@@ -80,7 +81,8 @@
             </tbody>
         </table>
 
-        {{ $documents->links() }}
+        {{ $documents->appends(request()->query())->links() }}
+
     </div>
 
 </x-app-layout>
