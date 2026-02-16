@@ -4,11 +4,13 @@
             Audit Log
         </h2>
     </x-slot>
+    @include('partials.protocol-year-selector')
+
 
     <div class="card" style="margin-bottom:20px; text-align:center;">
         <form method="GET"
             style="display:flex; gap:15px; align-items:center; justify-content:center;">
-            
+
             <label>
                 Ενότητα
                 <select name="section">
@@ -35,6 +37,19 @@
         </form>
     </div>
 
+    @php
+        // ✅ Φτιάχνουμε map: [section][document_id] => aa
+        $incomingIds = $logs->where('section', 'incoming')->pluck('document_id')->filter()->unique()->values();
+        $outgoingIds = $logs->where('section', 'outgoing')->pluck('document_id')->filter()->unique()->values();
+
+        $incomingAaMap = $incomingIds->isEmpty()
+            ? collect()
+            : \App\Models\IncomingDocument::whereIn('id', $incomingIds)->pluck('aa', 'id');
+
+        $outgoingAaMap = $outgoingIds->isEmpty()
+            ? collect()
+            : \App\Models\OutgoingDocument::whereIn('id', $outgoingIds)->pluck('aa', 'id');
+    @endphp
 
     <div class="card">
         <table border="1" width="100%" cellpadding="5">
@@ -43,17 +58,33 @@
                     <th>Ημερομηνία</th>
                     <th>Ενότητα</th>
                     <th>Ενέργεια</th>
-                    <th>Έγγραφο</th>
+                    <th>Α/Α</th>
                     <th>Χρήστης</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($logs as $log)
+                    @php
+                        $aa = null;
+
+                        if ($log->section === 'incoming') {
+                            $aa = $incomingAaMap[$log->document_id] ?? null;
+                        } elseif ($log->section === 'outgoing') {
+                            $aa = $outgoingAaMap[$log->document_id] ?? null;
+                        }
+                    @endphp
+
                     <tr>
                         <td>{{ $log->created_at->format('d/m/Y H:i') }}</td>
                         <td>{{ ucfirst($log->section) }}</td>
                         <td>{{ ucfirst($log->action) }}</td>
-                        <td>#{{ $log->document_id }}</td>
+                        <td>
+                            @if($aa)
+                                {{ $aa }}
+                            @else
+                                —
+                            @endif
+                        </td>
                         <td>
                             {{ $log->user?->name ?? 'System' }}
                             <br>
