@@ -149,9 +149,9 @@ class DocumentController extends Controller
 
         // Εξερχόμενα χωρίς εισερχόμενο στο range (ΤΟΥ ΕΠΙΛΕΓΜΕΝΟΥ ΕΤΟΥΣ)
         $orphanOutgoings = OutgoingDocument::whereNull('reply_to_incoming_id')
-            ->where('protocol_year', $selectedYear)
-            ->whereBetween('document_date', [$from, $to])
-            ->get();
+           ->where('protocol_year', $selectedYear)
+           ->whereBetween('document_date', [$from, $to])
+           ->get();
 
         $allDocuments = [];
 
@@ -159,6 +159,7 @@ class DocumentController extends Controller
             $allDocuments[] = [
                 'type' => 'incoming',
                 'date' => $in->incoming_date,
+                'aa'   => (int) $in->aa,
                 'incoming' => $in,
                 'outgoing' => $in->outgoingReplies ?? collect()
             ];
@@ -168,9 +169,10 @@ class DocumentController extends Controller
             $allDocuments[] = [
                 'type' => 'outgoing',
                 'date' => $out->document_date,
+                'aa'   => (int) $out->aa,
                 'incoming' => null,
                 'outgoing' => collect([$out])
-            ];
+             ];
         }
 
         usort($allDocuments, function ($a, $b) {
@@ -178,10 +180,10 @@ class DocumentController extends Controller
         });
 
         $documents = [];
-        $counter = 1;
         foreach ($allDocuments as $doc) {
-            $doc['display_aa'] = $counter++;
-            $documents[] = $doc;
+          // ✅ Στην εκτύπωση ο Α/Α να είναι ο πραγματικός (του πρωτοκόλλου)
+          $doc['display_aa'] = $doc['aa'] ?? '';
+          $documents[] = $doc;
         }
 
         // Μόνο εκτύπωση browser, χωρίς PDF
