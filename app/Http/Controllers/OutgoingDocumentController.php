@@ -126,24 +126,52 @@ class OutgoingDocumentController extends Controller
             'document_date'       => 'nullable|date',
             'summary'             => 'nullable|string',
             'comments'            => 'nullable|string',
-            'attachment'          => 'nullable|file|mimes:pdf|max:51200',
+
+            // ✅ ΤΩΡΑ ΠΟΛΛΑ PDF ΟΠΩΣ ΣΤΟ INCOMING
+            'attachments'         => 'nullable|array',
+            'attachments.*'       => 'file|mimes:pdf|max:51200',
         ]);
 
         $doc = OutgoingDocument::findOrFail($id);
 
-        // αφαιρούμε το attachment από τα δεδομένα
+        // αφαιρούμε τα attachments από τα δεδομένα του update
         $data = $validated;
-        unset($data['attachment']);
+        unset($data['attachments']);
 
         // αποθήκευση στη βάση
         $doc->update($data);
 
-        // αν ανέβηκε PDF
-        if ($request->hasFile('attachment')) {
-            $file = $request->file('attachment');
-            $filename = 'outgoing_' . time() . '.pdf';
-            $path = $file->storeAs('outgoing_attachments', $filename, 'public');
-            $doc->update(['attachment_path' => $path]);
+        // αν ανέβηκαν νέα PDF
+        if ($request->hasFile('attachments')) {
+            $files = $request->file('attachments');
+
+            $date = $doc->incoming_date
+                ? Carbon::parse($doc->incoming_date)
+                : now();
+
+            $year = $date->format('Y');
+            $folderDate = $date->format('Y-m-d');
+
+            foreach ($files as $i => $file) {
+                $filename = 'outgoing_' . $doc->aa . '_' . now()->format('His') . '_' . ($i + 1) . '.pdf';
+
+                $path = $file->storeAs(
+                    "{$year}/outgoing/{$folderDate}",
+                    $filename,
+                    'public'
+                );
+
+                $doc->attachments()->create([
+                    'path' => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                    'size' => $file->getSize(),
+                ]);
+
+                // backward compatibility: το 1ο γράφεται και στο attachment_path
+                if ($i === 0) {
+                    $doc->update(['attachment_path' => $path]);
+                }
+            }
         }
 
         return redirect()

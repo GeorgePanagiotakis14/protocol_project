@@ -96,7 +96,9 @@ class IncomingDocumentController extends Controller
 
     public function edit($id)
     {
-        $document = IncomingDocument::findOrFail($id);
+        $year = (int) session('protocol_year', now()->year);
+
+        $document = IncomingDocument::where('protocol_year', $year)->findOrFail($id);
         return view('incoming.edit', compact('document'));
     }
 
@@ -111,9 +113,53 @@ class IncomingDocumentController extends Controller
             'document_date'     => 'nullable|date',
             'summary'           => 'nullable|string',
             'comments'          => 'nullable|string',
+            // ✅ NEW (edit multi-attachments)
+            'attachments'       => 'nullable|array',
+            'attachments.*'     => 'file|mimes:pdf|max:51200',
         ]);
 
-        IncomingDocument::findOrFail($id)->update($validated);
+        $year = (int) session('protocol_year', now()->year);
+
+        $doc = IncomingDocument::where('protocol_year', $year)->findOrFail($id);
+
+        // ❗ Δεν περνάμε τα attachments στο update()
+        $data = $validated;
+        unset($data['attachments']);
+
+        $doc->update($data);
+
+        // ✅ Αν ανέβηκαν νέα PDF, τα αποθηκεύουμε όπως στο store
+        if ($request->hasFile('attachments')) {
+            $files = $request->file('attachments');
+
+            $date = $doc->incoming_date
+                ? Carbon::parse($doc->incoming_date)
+                : now();
+
+            $yearFolder = $date->format('Y');
+            $folderDate = $date->format('Y-m-d');
+
+            foreach ($files as $i => $file) {
+                $filename = 'incoming_' . $doc->aa . '_' . now()->format('His') . '_' . ($i + 1) . '.pdf';
+
+                $path = $file->storeAs(
+                    "{$yearFolder}/incoming/{$folderDate}",
+                    $filename,
+                    'public'
+                );
+
+                $doc->attachments()->create([
+                    'path' => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                    'size' => $file->getSize(),
+                ]);
+
+                // Backward compatibility: το 1ο νέο αρχείο γράφεται και στο attachment_path
+                if ($i === 0) {
+                    $doc->update(['attachment_path' => $path]);
+                }
+            }
+        }
 
         audit_log('incoming', 'update', $id);
 
@@ -122,16 +168,20 @@ class IncomingDocumentController extends Controller
 
     public function destroy($id)
     {
+        $year = (int) session('protocol_year', now()->year);
+
         audit_log('incoming', 'delete', $id);
 
-        IncomingDocument::findOrFail($id)->delete();
+        IncomingDocument::where('protocol_year', $year)->findOrFail($id)->delete();
 
         return redirect()->back()->with('success', 'Το εισερχόμενο διαγράφηκε.');
     }
 
     public function downloadAttachment($id)
     {
-        $doc = IncomingDocument::findOrFail($id);
+        $year = (int) session('protocol_year', now()->year);
+
+        $doc = IncomingDocument::where('protocol_year', $year)->findOrFail($id);
 
         abort_unless($doc->attachment_path, 404);
 
@@ -149,7 +199,11 @@ class IncomingDocumentController extends Controller
 
     public function attachmentsIndex(Request $request, $id)
     {
-        $doc = IncomingDocument::with('attachments')->findOrFail($id);
+        $year = (int) session('protocol_year', now()->year);
+
+        $doc = IncomingDocument::with('attachments')
+            ->where('protocol_year', $year)
+            ->findOrFail($id);
 
         $backUrl = $request->query('return') ?: route('incoming.index');
 
@@ -158,7 +212,9 @@ class IncomingDocumentController extends Controller
 
     public function attachmentsView($id, $attachmentId)
     {
-        $doc = IncomingDocument::findOrFail($id);
+        $year = (int) session('protocol_year', now()->year);
+
+        $doc = IncomingDocument::where('protocol_year', $year)->findOrFail($id);
 
         $att = $doc->attachments()->findOrFail($attachmentId);
 
@@ -175,7 +231,9 @@ class IncomingDocumentController extends Controller
 
     public function attachmentsViewer($id, $attachmentId)
     {
-        $doc = IncomingDocument::findOrFail($id);
+        $year = (int) session('protocol_year', now()->year);
+
+        $doc = IncomingDocument::where('protocol_year', $year)->findOrFail($id);
         $att = $doc->attachments()->findOrFail($attachmentId);
 
         // Τίτλος καρτέλας (σωστός)

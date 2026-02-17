@@ -56,20 +56,127 @@
                    value="{{ $document->document_date }}"><br><br>
             <br>
 
-            <label>Συνημμένο</label><br>
-            <input type="file" name="attachment"><br><br>
+            <label>Συνημμένα (PDF)</label><br>
+
+            <input
+                type="file"
+                name="attachments[]"
+                id="outgoing_attachments"
+                accept="application/pdf"
+                multiple
+                style="display:none"
+            />
+
+            <button
+                type="button"
+                id="outgoing_add_files_btn"
+                style="padding:6px 12px; border-radius:6px; background:#16a34a; color:#fff; border:none; cursor:pointer;"
+            >
+                Προσθήκη αρχείων
+            </button>
+
+            <small style="display:block; margin-top:6px; opacity:.7;">
+                Επιτρέπεται μόνο αρχείο PDF (μέχρι 50MB).
+            </small>
+
+            <ul id="outgoing_attachments_list" style="margin-top:8px; padding-left:18px;"></ul>
+
             <br>
-            
+
             <button type="submit"
                     style="border: 3px solid black; padding: 8px 16px; border-radius: 5px; font-weight: normal;">
                 Αποθήκευση
             </button>
 
-
-
-
         </form>
 
     </div>
+
+    <script>
+        (function () {
+            const input = document.getElementById('outgoing_attachments');
+            const list  = document.getElementById('outgoing_attachments_list');
+            const btn   = document.getElementById('outgoing_add_files_btn');
+
+            if (!input || !list || !btn) return;
+
+            const dt = new DataTransfer();
+
+            function fileKey(file) {
+                return `${file.name}__${file.size}__${file.lastModified}`;
+            }
+
+            function syncInputFiles() {
+                input.files = dt.files;
+            }
+
+            function renderList() {
+                list.innerHTML = '';
+
+                const files = Array.from(dt.files);
+                if (files.length === 0) return;
+
+                files.forEach((file, index) => {
+                    const li = document.createElement('li');
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = file.name;
+
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.textContent = 'Αφαίρεση';
+                    removeBtn.style.marginLeft = '10px';
+                    removeBtn.style.padding = '2px 6px';
+                    removeBtn.style.borderRadius = '4px';
+                    removeBtn.style.background = '#dc2626';
+                    removeBtn.style.color = '#fff';
+                    removeBtn.style.border = 'none';
+                    removeBtn.style.cursor = 'pointer';
+                    removeBtn.style.lineHeight = '1';
+
+                    removeBtn.addEventListener('click', () => {
+                        const rebuild = new DataTransfer();
+                        Array.from(dt.files).forEach((f, i) => {
+                            if (i !== index) rebuild.items.add(f);
+                        });
+
+                        while (dt.items.length) dt.items.remove(0);
+                        Array.from(rebuild.files).forEach(f => dt.items.add(f));
+
+                        syncInputFiles();
+                        renderList();
+                    });
+
+                    li.appendChild(nameSpan);
+                    li.appendChild(removeBtn);
+                    list.appendChild(li);
+                });
+            }
+
+            btn.addEventListener('click', () => input.click());
+
+            input.addEventListener('change', () => {
+                const selected = Array.from(input.files || []);
+                if (selected.length === 0) return;
+
+                const existingKeys = new Set(Array.from(dt.files).map(fileKey));
+
+                selected.forEach((file) => {
+                    if (file.type !== 'application/pdf') return;
+
+                    const key = fileKey(file);
+                    if (!existingKeys.has(key)) {
+                        dt.items.add(file);
+                        existingKeys.add(key);
+                    }
+                });
+
+                syncInputFiles();
+                renderList();
+            });
+
+            renderList();
+        })();
+    </script>
 
 </x-app-layout>
