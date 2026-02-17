@@ -120,6 +120,18 @@
             </button>
 
         </form>
+        {{-- ✅ Κρυφά forms διαγραφής (ΕΞΩ από το main form) για να μην έχουμε nested forms --}}
+            @if($document->attachments && $document->attachments->count())
+                @foreach($document->attachments as $att)
+                <form id="del-out-att-{{ $att->id }}"
+                    method="POST"
+                    action="{{ route('outgoing.attachments.destroy', [$document->id, $att->id]) }}?return={{ urlencode(url()->full()) }}"
+                    style="display:none;">
+                    @csrf
+                    @method('DELETE')
+                </form>
+            @endforeach
+        @endif
 
     </div>
 

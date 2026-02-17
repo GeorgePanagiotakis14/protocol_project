@@ -1,7 +1,5 @@
 <x-app-layout>
 
-
-
     <style>
 
         /* Background εικόνα για όλη τη σελίδα */
@@ -157,14 +155,56 @@
             </a>
 
             <a href="{{ route('attachments.tree') }}" class="home-card">
-            <h3>Επισυναπτόμενα</h3>
-            <p>Προβολή όλων των επισυναπτόμενων σε μορφή δέντρου.</p>
+                <h3>Επισυναπτόμενα</h3>
+                <p>Προβολή όλων των επισυναπτόμενων σε μορφή δέντρου.</p>
             </a>
-
 
         </div>
 
+        {{-- ✅ Backup block (μόνο Admin) --}}
+        @auth
+            @if(method_exists(auth()->user(), 'isAdmin') && auth()->user()->isAdmin())
+                <div style="width:100%; max-width:1200px; margin-top: 25px;">
+                    <div style="background: rgba(255, 255, 255, 0.95);
+                                border-radius: 12px;
+                                padding: 22px 24px;
+                                box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+                                border-left: 6px solid #111827;">
+                        <h3 style="font-size: 20px; margin-bottom: 10px;">Backup (Admin)</h3>
+                        <p style="font-size: 14px; color:#555; margin-bottom: 14px;">
+                            Δημιουργία backup στον υπολογιστή και κατέβασμα του τελευταίου backup αρχείου.
+                        </p>
 
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                            <form method="POST" action="{{ route('admin.backup.run') }}">
+                                @csrf
+                                <button type="submit"
+                                        style="padding: 10px 14px; border-radius: 10px; background:#111827; color:#fff; border:none; cursor:pointer;">
+                                    🔄 Δημιουργία Backup
+                                </button>
+                            </form>
+
+                            <a href="{{ route('admin.backup.downloadLatest') }}"
+                               style="padding: 10px 14px; border-radius: 10px; background:#2563eb; color:#fff; text-decoration:none;">
+                                ⬇️ Κατέβασμα τελευταίου Backup
+                            </a>
+                        </div>
+
+                        @if(session('success'))
+                            <div style="margin-top:12px; padding:10px; background:#ecfdf5; border:1px solid #10b981; border-radius:10px; color:#065f46;">
+                                {{ session('success') }}
+                            </div>
+                        @endif
+
+                        @if(session('error'))
+                            <div style="margin-top:12px; padding:10px; background:#fef2f2; border:1px solid #ef4444; border-radius:10px; color:#7f1d1d;">
+                                {{ session('error') }}
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endif
+        @endauth
 
     </div>
 

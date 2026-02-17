@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\AttachmentTreeController;
+use App\Http\Controllers\Admin\BackupController; // ✅ ΠΡΟΣΘΗΚΗ
 
 /*
 |--------------------------------------------------------------------------
@@ -143,6 +144,10 @@ Route::middleware(['auth', 'active', 'admin', 'protocolYear'])
         // Audit log
         Route::get('/audit', [AuditLogController::class, 'index'])
             ->name('audit.index');
+
+        // ✅ BACKUP (ΠΡΟΣΘΗΚΕΣ ΜΟΝΟ)
+        Route::post('/backup/run', [BackupController::class, 'run'])->name('backup.run');
+        Route::get('/backup/download-latest', [BackupController::class, 'downloadLatest'])->name('backup.downloadLatest');
     });
 
 require __DIR__.'/auth.php';
