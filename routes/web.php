@@ -72,6 +72,9 @@ Route::middleware(['auth', 'active', 'protocolYear'])->group(function () {
     Route::get('/incoming/{id}/attachments/{attachmentId}/viewer', [IncomingDocumentController::class, 'attachmentsViewer'])
         ->name('incoming.attachments.viewer');
 
+    Route::delete('/incoming/{id}/attachments/{attachmentId}', [App\Http\Controllers\IncomingDocumentController::class, 'attachmentsDestroy'])
+        ->name('incoming.attachments.destroy');
+
     Route::get('/outgoing/{id}/attachment', [OutgoingDocumentController::class, 'viewAttachment'])
         ->name('outgoing.attachment');
 
@@ -83,6 +86,9 @@ Route::middleware(['auth', 'active', 'protocolYear'])->group(function () {
 
     Route::get('/outgoing/{id}/attachments/{attachmentId}/viewer', [OutgoingDocumentController::class, 'attachmentsViewer'])
         ->name('outgoing.attachments.viewer');
+
+    Route::delete('/outgoing/{id}/attachments/{attachmentId}', [OutgoingDocumentController::class, 'attachmentsDestroy'])
+        ->name('outgoing.attachments.destroy');
 
     Route::get('/attachments/tree', [AttachmentTreeController::class, 'index'])
         ->name('attachments.tree');

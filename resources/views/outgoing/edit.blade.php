@@ -19,6 +19,8 @@
             </div>
         @endif
 
+       
+        {{-- ✅ MAIN FORM --}}
         <form method="POST"
               action="{{ route('outgoing.update', $document->id) }}"
               enctype="multipart/form-data">
@@ -55,7 +57,36 @@
             <input type="date" name="document_date"
                    value="{{ $document->document_date }}"><br><br>
             <br>
+        {{-- ✅ Υπάρχοντα PDF (ΕΞΩ από το main form για να μην έχουμε nested forms) --}}
+             @if($document->attachments && $document->attachments->count())
+                 <div style="margin: 10px 0 14px; padding:10px; border:1px solid #ccc; border-radius:8px;">
+                      <div style="font-weight:700; margin-bottom:8px;">Υπάρχοντα PDF:</div>
 
+                     <ul style="padding-left:18px;">
+                            @foreach($document->attachments as $att)
+                                <li style="margin-bottom:6px;">
+                                    <a href="{{ route('outgoing.attachments.view', [$document->id, $att->id]) }}" target="_blank">
+                                     {{ $att->original_name ?? basename($att->path) }}
+                                 </a>
+
+                                 <form method="POST"
+                                        action="{{ route('outgoing.attachments.destroy', [$document->id, $att->id]) }}?return={{ urlencode(url()->full()) }}"
+                                       style="display:inline-block; margin-left:10px;"
+                                       onsubmit="return confirm('Να διαγραφεί το συνημμένο;');">
+                                        @csrf
+                                        @method('DELETE')
+
+                                     <button type="submit"
+                                         style="padding:2px 8px; border-radius:6px; background:#dc2626; color:#fff; border:none; cursor:pointer;">
+                                         Διαγραφή
+                                     </button>
+                                 </form>
+                               </li>
+                            @endforeach
+                      </ul>
+                 </div>
+                @endif
+                
             <label>Συνημμένα (PDF)</label><br>
 
             <input

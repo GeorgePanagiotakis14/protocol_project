@@ -94,13 +94,17 @@ class IncomingDocumentController extends Controller
         return redirect()->back()->with('success', 'Το εισερχόμενο καταχωρήθηκε επιτυχώς.');
     }
 
-    public function edit($id)
-    {
-        $year = (int) session('protocol_year', now()->year);
+   public function edit($id)
+  {
+    $year = (int) session('protocol_year', now()->year);
 
-        $document = IncomingDocument::where('protocol_year', $year)->findOrFail($id);
-        return view('incoming.edit', compact('document'));
-    }
+    $document = IncomingDocument::with('attachments')
+        ->where('protocol_year', $year)
+        ->findOrFail($id);
+
+    return view('incoming.edit', compact('document'));
+  }
+
 
     public function update(Request $request, $id)
     {
@@ -277,4 +281,30 @@ class IncomingDocumentController extends Controller
             return $next;
         });
     }
+    public function attachmentsDestroy(Request $request, $id, $attachmentId)
+  {
+    $doc = IncomingDocument::with('attachments')->findOrFail($id);
+
+    $att = $doc->attachments()->findOrFail($attachmentId);
+
+    // 1) Σβήνουμε αρχείο από storage (αν υπάρχει)
+    if ($att->path && Storage::disk('public')->exists($att->path)) {
+        Storage::disk('public')->delete($att->path);
+    }
+
+    // 2) Σβήνουμε row από table
+    $att->delete();
+
+    // 3) Backward compatibility: αν το attachment_path δείχνει σε αυτό που διέγραψες,
+    //    βάλε το στο "πρώτο" που απομένει ή null.
+    if ($doc->attachment_path === $att->path) {
+        $first = $doc->attachments()->orderBy('id', 'asc')->first();
+        $doc->update(['attachment_path' => $first?->path]);
+    }
+
+    $backUrl = $request->query('return') ?: route('incoming.edit', $doc->id);
+
+    return redirect($backUrl)->with('success', 'Το συνημμένο διαγράφηκε.');
+  }
+
 }
