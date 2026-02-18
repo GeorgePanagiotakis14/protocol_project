@@ -28,7 +28,9 @@
 
             <label>Α/Α</label><br>
             <input type="text" name="protocol_number"
-                   value="{{ old('protocol_number', $document->protocol_number) }}">
+                   value="{{ old('protocol_number', $document->protocol_number) }}"
+                   readonly
+                   style="background:#f3f3f3; cursor:not-allowed;">
             <br><br>
 
             <label>Ημερομηνία Παραλαβής</label><br>

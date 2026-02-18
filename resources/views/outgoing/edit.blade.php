@@ -29,7 +29,9 @@
 
             <label>Α/Α</label><br>
             <input type="text" name="protocol_number"
-                   value="{{ $document->protocol_number }}"><br><br>
+                   value="{{ $document->protocol_number }}"
+                    readonly
+                    style="background:#f3f3f3; cursor:not-allowed;"><br><br>
             <br>
 
             <label>Αρχή στην οποία απευθύνεται</label><br>
