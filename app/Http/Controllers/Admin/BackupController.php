@@ -4,100 +4,173 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class BackupController extends Controller
 {
     /**
-     * POST admin/backup/run
+     * POST /admin/backup/run
+     * Κάνει backup της βάσης σε .sql και το κατεβάζει.
      */
     public function run(Request $request)
     {
-        // για να μη σε κόψει το web timeout
-        @set_time_limit(0);
-        @ini_set('max_execution_time', '0');
-
-        Artisan::call('backup:run', [
-            '--disable-notifications' => true,
-        ]);
-
-        $output = Artisan::output();
-
-        $zip = $this->findLatestBackupZipPath();
-
-        if (!$zip) {
-            return back()->with('error', "Δεν βρέθηκε backup zip. Output:\n" . $output);
-        }
-
-        return back()->with('success', '✅ Το backup δημιουργήθηκε: ' . basename($zip));
+        return $this->perform();
     }
 
     /**
-     * GET admin/backup/download-latest
+     * Δημιουργεί SQL dump (schema + data) για MySQL.
      */
-    public function downloadLatest(): BinaryFileResponse
+    public function perform()
     {
-        $zip = $this->findLatestBackupZipPath();
+        $connection = config('database.default'); // π.χ. mysql
+        $cfg = config("database.connections.$connection");
 
-        if (!$zip) {
-            abort(404, 'Δεν βρέθηκε backup zip. Έλεγξε config/backup.php και storage/logs/laravel.log');
+        if (($cfg['driver'] ?? null) !== 'mysql') {
+            abort(500, 'BackupController supports only MySQL connections.');
         }
 
-        return response()->download($zip, basename($zip));
-    }
-
-    /**
-     * Βρίσκει το πιο πρόσφατο .zip του Spatie ΣΤΟ ΣΩΣΤΟ DISK.
-     *
-     * Το Spatie αποθηκεύει στο disk(s) που έχεις στο:
-     * config('backup.backup.destination.disks') => π.χ. ['local']
-     *
-     * Και μέσα σε φάκελο:
-     * <backup.name>/backup_....zip
-     */
-    private function findLatestBackupZipPath(): ?string
-    {
-        $backupName = config('backup.backup.name') ?: config('app.name', 'Laravel');
-
-        $disks = config('backup.backup.destination.disks') ?: ['local'];
-        if (!is_array($disks) || empty($disks)) {
-            $disks = ['local'];
+        $databaseName = (string) ($cfg['database'] ?? '');
+        if ($databaseName === '') {
+            abort(500, 'Database name is missing in config.');
         }
 
-        $allZipFiles = collect();
+        $backupDir = storage_path('app/backups');
+        if (!File::exists($backupDir)) {
+            File::makeDirectory($backupDir, 0755, true);
+        }
 
-        foreach ($disks as $diskName) {
-            try {
-                $disk = Storage::disk($diskName);
-                $root = $disk->path($backupName); // ✅ π.χ. storage/app/private/Laravel
+        $fileName = 'backup_' . $databaseName . '_' . now()->format('Y_m_d_H_i_s') . '.sql';
+        $path = $backupDir . DIRECTORY_SEPARATOR . $fileName;
 
-                if (!is_dir($root)) {
-                    continue;
-                }
+        // Παίρνουμε όλα τα tables (base tables)
+        $tables = DB::select('SHOW FULL TABLES WHERE Table_type = "BASE TABLE"');
+        if (empty($tables)) {
+            abort(500, 'No tables found or insufficient permissions.');
+        }
 
-                $files = collect(File::allFiles($root))
-                    ->filter(fn ($f) => Str::endsWith(Str::lower($f->getFilename()), '.zip'))
-                    ->map(function ($f) {
-                        return [
-                            'path' => $f->getPathname(),
-                            'mtime' => $f->getMTime(),
-                        ];
-                    });
+        // Το πρώτο πεδίο στο αποτέλεσμα είναι το "Tables_in_<db>"
+        $firstRow = (array) $tables[0];
+        $tableColumn = array_key_first($firstRow);
 
-                $allZipFiles = $allZipFiles->merge($files);
-            } catch (\Throwable $e) {
-                // αν κάποιο disk δεν είναι σωστό/ρυθμισμένο, το αγνοούμε
+        // Ξεκινάμε να γράφουμε κατευθείαν σε αρχείο (όχι σε ένα τεράστιο string)
+        $fh = fopen($path, 'wb');
+        if (!$fh) {
+            abort(500, 'Cannot write backup file.');
+        }
+
+        $this->writeLine($fh, "-- Database Backup");
+        $this->writeLine($fh, "-- Database: {$databaseName}");
+        $this->writeLine($fh, "-- Generated: " . now()->toDateTimeString());
+        $this->writeLine($fh, "");
+        $this->writeLine($fh, "SET NAMES utf8mb4;");
+        $this->writeLine($fh, "SET FOREIGN_KEY_CHECKS=0;");
+        $this->writeLine($fh, "");
+
+        foreach ($tables as $t) {
+            $tableName = (string) ($t->$tableColumn ?? '');
+            if ($tableName === '') {
                 continue;
             }
+
+            $safeTable = $this->escapeIdentifier($tableName);
+
+            $this->writeLine($fh, "-- ----------------------------");
+            $this->writeLine($fh, "-- Table structure for {$safeTable}");
+            $this->writeLine($fh, "-- ----------------------------");
+
+            // DROP + CREATE
+            $this->writeLine($fh, "DROP TABLE IF EXISTS {$safeTable};");
+
+            $createRow = DB::select("SHOW CREATE TABLE {$safeTable}");
+            $createSql = $createRow[0]->{'Create Table'} ?? null;
+
+            if (!$createSql) {
+                fclose($fh);
+                abort(500, "Could not read CREATE TABLE for {$tableName}");
+            }
+
+            $this->writeLine($fh, $createSql . ";");
+            $this->writeLine($fh, "");
+
+            // DATA
+            $this->writeLine($fh, "-- ----------------------------");
+            $this->writeLine($fh, "-- Records of {$safeTable}");
+            $this->writeLine($fh, "-- ----------------------------");
+
+            // Chunk για να μη φορτώνεις ολόκληρο table στη μνήμη
+            $chunkSize = 500;
+            DB::table($tableName)->orderByRaw('1')->chunk($chunkSize, function ($rows) use ($fh, $safeTable) {
+                foreach ($rows as $row) {
+                    $values = array_map(function ($value) {
+                        return $this->sqlValue($value);
+                    }, (array) $row);
+
+                    $this->writeLine(
+                        $fh,
+                        "INSERT INTO {$safeTable} VALUES (" . implode(',', $values) . ");"
+                    );
+                }
+            });
+
+            $this->writeLine($fh, "");
+            $this->writeLine($fh, "");
         }
 
-        return $allZipFiles
-            ->sortByDesc('mtime')
-            ->first()['path'] ?? null;
+        $this->writeLine($fh, "SET FOREIGN_KEY_CHECKS=1;");
+        fclose($fh);
+
+        // Download + delete after send
+        return response()->download($path, $fileName, [
+            'Content-Type' => 'application/sql',
+        ])->deleteFileAfterSend(true);
+    }
+
+    private function writeLine($fh, string $line): void
+    {
+        fwrite($fh, $line . "\n");
+    }
+
+    /**
+     * Escapes table/column identifiers with backticks.
+     */
+    private function escapeIdentifier(string $name): string
+    {
+        // escape any backticks inside identifier
+        $name = str_replace('`', '``', $name);
+        return "`{$name}`";
+    }
+
+    /**
+     * Converts a PHP value to safe SQL literal.
+     */
+    private function sqlValue($value): string
+    {
+        if (is_null($value)) {
+            return 'NULL';
+        }
+
+        // booleans as 0/1
+        if (is_bool($value)) {
+            return $value ? '1' : '0';
+        }
+
+        // numbers unquoted
+        if (is_int($value) || is_float($value)) {
+            return (string) $value;
+        }
+
+        // Fallback: quote strings
+        $str = (string) $value;
+
+        // Escape backslashes + quotes + newlines (basic MySQL string escaping)
+        $str = str_replace(
+            ["\\", "\0", "\n", "\r", "\t", "'", "\"", "\x1a"],
+            ["\\\\", "\\0", "\\n", "\\r", "\\t", "\\'", "\\\"", "\\Z"],
+            $str
+        );
+
+        return "'" . $str . "'";
     }
 }
 

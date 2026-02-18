@@ -73,7 +73,6 @@
             width: 100%;
         }
 
-
         .home-card:hover {
             transform: translateY(-6px);
             box-shadow: 0 12px 25px rgba(0,0,0,0.15);
@@ -164,18 +163,21 @@
         {{-- ✅ Backup block (μόνο Admin) --}}
         @auth
             @if(method_exists(auth()->user(), 'isAdmin') && auth()->user()->isAdmin())
-                <div style="width:100%; max-width:1200px; margin-top: 25px;">
+                <div style="width:100%; margin-top: 25px; display:flex; justify-content:center;">
                     <div style="background: rgba(255, 255, 255, 0.95);
                                 border-radius: 12px;
                                 padding: 22px 24px;
                                 box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-                                border-left: 6px solid #111827;">
+                                border-left: 6px solid #111827;
+                                width: 100%;
+                                max-width: 520px;
+                                text-align: center;">
                         <h3 style="font-size: 20px; margin-bottom: 10px;">Backup (Admin)</h3>
                         <p style="font-size: 14px; color:#555; margin-bottom: 14px;">
-                            Δημιουργία backup στον υπολογιστή και κατέβασμα του τελευταίου backup αρχείου.
+                            Δημιουργεί backup της βάσης και το κατεβάζει άμεσα στον υπολογιστή.
                         </p>
 
-                        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                        <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; align-items:center;">
                             <form method="POST" action="{{ route('admin.backup.run') }}">
                                 @csrf
                                 <button type="submit"
@@ -183,11 +185,6 @@
                                     🔄 Δημιουργία Backup
                                 </button>
                             </form>
-
-                            <a href="{{ route('admin.backup.downloadLatest') }}"
-                               style="padding: 10px 14px; border-radius: 10px; background:#2563eb; color:#fff; text-decoration:none;">
-                                ⬇️ Κατέβασμα τελευταίου Backup
-                            </a>
                         </div>
 
                         @if(session('success'))
@@ -213,3 +210,4 @@
          class="library-logo">
 
 </x-app-layout>
+
