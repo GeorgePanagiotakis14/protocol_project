@@ -44,13 +44,13 @@
             <br><br>
 
             <label>Τόπος που εκδόθηκε</label><br>
-            <input type="text" name="subject"
-                   value="{{ old('subject', $document->subject) }}">
+            <input type="text" name="sender"
+                   value="{{ old('sender', $document->sender) }}">
             <br><br>
 
             <label>Αρχή που το έχει εκδόσει</label><br>
-            <input type="text" name="sender"
-                   value="{{ old('sender', $document->sender) }}">
+            <input type="text" name="subject"
+                   value="{{ old('subject', $document->subject) }}">
             <br><br>
 
             <label>Χρονολογία εγγράφου</label><br>

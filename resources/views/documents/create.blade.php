@@ -137,10 +137,10 @@
                         <label>Αριθμός Εισερχομένου Εγγράφου</label>
                         <input type="text" name="incoming_protocol" required>
 
-                        <label>Τόπος Έκδοσης</label>
+                        <label>Τόπος που εκδόθηκε</label>
                         <input type="text" name="sender">
 
-                        <label>Αρχή Έκδοσης</label>
+                        <label>Αρχή που το έχει εκδόσει</label>
                         <input type="text" name="subject">
 
                         <label>Χρονολογία Εγγράφου</label>
