@@ -19,7 +19,6 @@
             </div>
         @endif
 
-       
         {{-- ✅ MAIN FORM --}}
         <form method="POST"
               action="{{ route('outgoing.update', $document->id) }}"
@@ -34,59 +33,58 @@
             <br>
 
             <label>Αρχή στην οποία απευθύνεται</label><br>
-            <input type="text" name="incoming_protocol"
-                   value="{{ $document->incoming_protocol }}"><br><br>
-            <br>
-
-            <label>Χρονολογία</label><br>
-            <input type="date" name="incoming_date"
-                   value="{{ $document->incoming_date }}"><br><br>
-            <br>
-
-            <label>Περίληψη</label><br>
-            <input type="text" name="subject"
-                   value="{{ $document->subject }}"><br><br>
-            <br>
-
-            <label>Σχετικοί Αριθμοί</label><br>
             <input type="text" name="sender"
                    value="{{ $document->sender }}"><br><br>
             <br>
 
-            <label>Φάκελος Αρχείου</label><br>
-            <input type="date" name="document_date"
-                   value="{{ $document->document_date }}"><br><br>
+            <label>Περίληψη εξερχομένου εγγράφου</label><br>
+            <input type="text" name="summary"
+                   value="{{ $document->summary }}"><br><br>
             <br>
-        {{-- ✅ Υπάρχοντα PDF (ΕΞΩ από το main form για να μην έχουμε nested forms) --}}
-             @if($document->attachments && $document->attachments->count())
-                 <div style="margin: 10px 0 14px; padding:10px; border:1px solid #ccc; border-radius:8px;">
-                      <div style="font-weight:700; margin-bottom:8px;">Υπάρχοντα PDF:</div>
 
-                     <ul style="padding-left:18px;">
-                            @foreach($document->attachments as $att)
-                                <li style="margin-bottom:6px;">
-                                    <a href="{{ route('outgoing.attachments.view', [$document->id, $att->id]) }}" target="_blank">
-                                     {{ $att->original_name ?? basename($att->path) }}
-                                 </a>
+            <label>Χρονολογία</label><br>
+            <input type="date" name="document_date"
+                  value="{{ $document->document_date }}"><br><br>
 
-                                 <form method="POST"
-                                        action="{{ route('outgoing.attachments.destroy', [$document->id, $att->id]) }}?return={{ urlencode(url()->full()) }}"
-                                       style="display:inline-block; margin-left:10px;"
-                                       onsubmit="return confirm('Να διαγραφεί το συνημμένο;');">
-                                        @csrf
-                                        @method('DELETE')
 
-                                     <button type="submit"
-                                         style="padding:2px 8px; border-radius:6px; background:#dc2626; color:#fff; border:none; cursor:pointer;">
-                                         Διαγραφή
-                                     </button>
-                                 </form>
-                               </li>
-                            @endforeach
-                      </ul>
-                 </div>
-                @endif
-                
+            <label>Σχετικοί Αριθμοί</label><br>
+            <input type="text" name="incoming_document_number"
+                   value="{{ $document->incoming_document_number }}"><br><br>
+            <br>
+
+            <label>Φάκελος Αρχείου</label><br>
+            <input type="text" name="incoming_protocol"
+                   value="{{ $document->incoming_protocol}}"><br><br>
+            <br>
+
+             <label>Παρατηρήσεις</label><br>
+            <input type="text" name="comments"
+                   value="{{ $document->comments}}"><br><br>
+            <br>
+
+            {{-- ✅ Υπάρχοντα PDF --}}
+            @if($document->attachments && $document->attachments->count())
+                <div style="margin: 10px 0 14px; padding:10px; border:1px solid #ccc; border-radius:8px;">
+                    <div style="font-weight:700; margin-bottom:8px;">Υπάρχοντα PDF:</div>
+
+                    <ul style="padding-left:18px;">
+                        @foreach($document->attachments as $att)
+                            <li style="margin-bottom:6px;">
+                                <a href="{{ route('outgoing.attachments.view', [$document->id, $att->id]) }}" target="_blank">
+                                    {{ $att->original_name ?? basename($att->path) }}
+                                </a>
+
+                                <button type="button"
+                                    onclick="if(confirm('Να διαγραφεί το συνημμένο;')){ document.getElementById('del-out-att-{{ $att->id }}').submit(); }"
+                                    style="display:inline-block; margin-left:10px; padding:2px 8px; border-radius:6px; background:#dc2626; color:#fff; border:none; cursor:pointer;">
+                                    Διαγραφή
+                                </button>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <label>Συνημμένα (PDF)</label><br>
 
             <input
@@ -120,13 +118,14 @@
             </button>
 
         </form>
-        {{-- ✅ Κρυφά forms διαγραφής (ΕΞΩ από το main form) για να μην έχουμε nested forms --}}
-            @if($document->attachments && $document->attachments->count())
-                @foreach($document->attachments as $att)
+
+        {{-- ✅ Hidden DELETE forms (ΕΞΩ από το main form) --}}
+        @if($document->attachments && $document->attachments->count())
+            @foreach($document->attachments as $att)
                 <form id="del-out-att-{{ $att->id }}"
-                    method="POST"
-                    action="{{ route('outgoing.attachments.destroy', [$document->id, $att->id]) }}?return={{ urlencode(url()->full()) }}"
-                    style="display:none;">
+                      method="POST"
+                      action="{{ route('outgoing.attachments.destroy', [$document->id, $att->id]) }}?return={{ urlencode(url()->full()) }}"
+                      style="display:none;">
                     @csrf
                     @method('DELETE')
                 </form>

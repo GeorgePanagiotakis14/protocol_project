@@ -36,7 +36,7 @@
                    value="{{ old('incoming_date', $document->incoming_date) }}">
             <br><br>
 
-            <label>Αριθμός Πρωτοκόλλου</label><br>
+            <label>Αριθμός εισερχομένου εγγράφου</label><br>
             <input type="text" name="incoming_protocol"
                    value="{{ old('incoming_protocol', $document->incoming_protocol) }}">
             <br><br>
@@ -46,7 +46,7 @@
                    value="{{ old('subject', $document->subject) }}">
             <br><br>
 
-            <label>Αρχή που το εξέδωσε</label><br>
+            <label>Αρχή που το έχει εκδόσει</label><br>
             <input type="text" name="sender"
                    value="{{ old('sender', $document->sender) }}">
             <br><br>

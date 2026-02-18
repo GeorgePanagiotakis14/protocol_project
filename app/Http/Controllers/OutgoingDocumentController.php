@@ -43,7 +43,6 @@ class OutgoingDocumentController extends Controller
 
         $selectedYear = (int) session('protocol_year', now()->year);
 
-        // ✅ Δεν περνάμε τα attachments στο create
         $data = $validated;
         unset($data['attachments']);
 
@@ -51,17 +50,14 @@ class OutgoingDocumentController extends Controller
             $aa = null;
             $yearToSave = $selectedYear;
 
-            // Αν είναι απάντηση -> παίρνει Α/Α από το incoming + ίδιο protocol_year με το incoming
             if (!empty($data['reply_to_incoming_id'])) {
                 $incoming = \App\Models\IncomingDocument::findOrFail($data['reply_to_incoming_id']);
                 $aa = (int) $incoming->aa;
                 $yearToSave = (int) ($incoming->protocol_year ?? $selectedYear);
             } else {
-                // Ανεξάρτητο εξερχόμενο -> παίρνει νέο από counter του επιλεγμένου έτους
                 $aa = $this->nextProtocolNumber($selectedYear);
             }
 
-            // γράφουμε σωστά στο record
             return OutgoingDocument::create([
                 ...$data,
                 'protocol_year' => $yearToSave,
@@ -70,10 +66,8 @@ class OutgoingDocumentController extends Controller
             ]);
         });
 
-        // ✅ Αποθήκευση ΟΛΩΝ των PDF
         $files = $request->file('attachments');
 
-        // Folder date: ίδια λογική με πριν (αν έχει incoming_date αλλιώς now)
         $date = $document->incoming_date
             ? Carbon::parse($document->incoming_date)
             : now();
@@ -90,14 +84,12 @@ class OutgoingDocumentController extends Controller
                 'public'
             );
 
-            // ✅ γράφει στο νέο table outgoing_document_attachments
             $document->attachments()->create([
                 'path' => $path,
                 'original_name' => $file->getClientOriginalName(),
                 'size' => $file->getSize(),
             ]);
 
-            // ✅ backward compatibility: το 1ο γράφεται και στο attachment_path
             if ($i === 0) {
                 $document->update(['attachment_path' => $path]);
             }
@@ -105,20 +97,32 @@ class OutgoingDocumentController extends Controller
 
         audit_log('outgoing', 'create', $document->id);
 
-        return redirect()->back()->with('success', 'Το εξερχόμενο καταχωρήθηκε επιτυχώς.');
+        return redirect()
+            ->back()
+            ->with('success', 'Το εξερχόμενο καταχωρήθηκε επιτυχώς.');
     }
 
-   public function edit($id)
-  {
-    $year = (int) session('protocol_year', now()->year);
+    public function edit($id)
+    {
+        $year = (int) session('protocol_year', now()->year);
 
-    $document = OutgoingDocument::with('attachments')
-        ->where('protocol_year', $year)
-        ->findOrFail($id);
+        // 1) Προσπάθησε με το τρέχον έτος (όπως είχες)
+        $document = OutgoingDocument::with('attachments')
+            ->where('protocol_year', $year)
+            ->find($id);
 
-    return view('outgoing.edit', compact('document'));
-  }
+        // 2) Αν δεν βρεθεί (π.χ. είναι σε άλλο έτος), κάνε auto-switch στο σωστό year
+        if (!$document) {
+            $any = OutgoingDocument::with('attachments')->findOrFail($id);
 
+            return redirect()->route('outgoing.edit', [
+                'id' => $any->id,
+                'year' => $any->protocol_year,
+            ]);
+        }
+
+        return view('outgoing.edit', compact('document'));
+    }
 
     public function update(Request $request, $id)
     {
@@ -130,24 +134,23 @@ class OutgoingDocumentController extends Controller
             'subject'             => 'nullable|string',
             'sender'              => 'nullable|string',
             'document_date'       => 'nullable|date',
+            'incoming_document_number' => 'nullable|string',
             'summary'             => 'nullable|string',
             'comments'            => 'nullable|string',
 
-            // ✅ ΤΩΡΑ ΠΟΛΛΑ PDF ΟΠΩΣ ΣΤΟ INCOMING
             'attachments'         => 'nullable|array',
             'attachments.*'       => 'file|mimes:pdf|max:51200',
         ]);
 
-        $doc = OutgoingDocument::findOrFail($id);
+        $year = (int) session('protocol_year', now()->year);
 
-        // αφαιρούμε τα attachments από τα δεδομένα του update
+        $doc = OutgoingDocument::where('protocol_year', $year)->findOrFail($id);
+
         $data = $validated;
         unset($data['attachments']);
 
-        // αποθήκευση στη βάση
         $doc->update($data);
 
-        // αν ανέβηκαν νέα PDF
         if ($request->hasFile('attachments')) {
             $files = $request->file('attachments');
 
@@ -155,14 +158,14 @@ class OutgoingDocumentController extends Controller
                 ? Carbon::parse($doc->incoming_date)
                 : now();
 
-            $year = $date->format('Y');
+            $yearFolder = $date->format('Y');
             $folderDate = $date->format('Y-m-d');
 
             foreach ($files as $i => $file) {
                 $filename = 'outgoing_' . $doc->aa . '_' . now()->format('His') . '_' . ($i + 1) . '.pdf';
 
                 $path = $file->storeAs(
-                    "{$year}/outgoing/{$folderDate}",
+                    "{$yearFolder}/outgoing/{$folderDate}",
                     $filename,
                     'public'
                 );
@@ -173,7 +176,6 @@ class OutgoingDocumentController extends Controller
                     'size' => $file->getSize(),
                 ]);
 
-                // backward compatibility: το 1ο γράφεται και στο attachment_path
                 if ($i === 0) {
                     $doc->update(['attachment_path' => $path]);
                 }
@@ -181,20 +183,25 @@ class OutgoingDocumentController extends Controller
         }
 
         return redirect()
-            ->route('outgoing.index')
+            ->route('outgoing.index', ['year' => $doc->protocol_year])
             ->with('success', 'Το εξερχόμενο ενημερώθηκε.');
     }
 
     public function destroy($id)
     {
-        audit_log('outgoing', 'delete', $id);
+        $year = (int) session('protocol_year', now()->year);
 
-        OutgoingDocument::findOrFail($id)->delete();
+        $doc = OutgoingDocument::where('protocol_year', $year)->findOrFail($id);
 
-        return redirect()->back()->with('success', 'Το εξερχόμενο διαγράφηκε.');
+        audit_log('outgoing', 'delete', $doc->id);
+
+        $doc->delete();
+
+        return redirect()
+            ->route('outgoing.index', ['year' => $year])
+            ->with('success', 'Το εξερχόμενο διαγράφηκε.');
     }
 
-    // ✅ Inline προβολή PDF (όπως στα εισερχόμενα)
     public function viewAttachment($id)
     {
         $doc = OutgoingDocument::findOrFail($id);
@@ -236,10 +243,7 @@ class OutgoingDocumentController extends Controller
         $doc = \App\Models\OutgoingDocument::findOrFail($id);
         $att = $doc->attachments()->findOrFail($attachmentId);
 
-        // Τίτλος καρτέλας (σωστός)
         $title = $att->original_name ?: ('outgoing_' . $doc->aa . '.pdf');
-
-        // Το PDF συνεχίζει να σερβίρεται από το υπάρχον route outgoing.attachments.view
         $pdfUrl = route('outgoing.attachments.view', [$doc->id, $att->id]);
 
         return view('outgoing.viewer', compact('doc', 'att', 'title', 'pdfUrl'));
@@ -277,36 +281,33 @@ class OutgoingDocumentController extends Controller
             return $next;
         });
     }
+
     public function attachmentsDestroy(Request $request, $id, $attachmentId)
-  {
-    $year = (int) session('protocol_year', now()->year);
+    {
+        $year = (int) session('protocol_year', now()->year);
 
-    // Αν θες year-isolation παντού:
-    $doc = OutgoingDocument::with('attachments')
-        ->where('protocol_year', $year)
-        ->findOrFail($id);
+        $doc = OutgoingDocument::with('attachments')
+            ->where('protocol_year', $year)
+            ->findOrFail($id);
 
-    $att = $doc->attachments()->findOrFail($attachmentId);
+        $att = $doc->attachments()->findOrFail($attachmentId);
 
-    // 1) Σβήνουμε αρχείο από storage (αν υπάρχει)
-    if ($att->path && Storage::disk('public')->exists($att->path)) {
-        Storage::disk('public')->delete($att->path);
+        if ($att->path && Storage::disk('public')->exists($att->path)) {
+            Storage::disk('public')->delete($att->path);
+        }
+
+        $att->delete();
+
+        if ($doc->attachment_path === $att->path) {
+            $first = $doc->attachments()->orderBy('id', 'asc')->first();
+            $doc->update(['attachment_path' => $first?->path]);
+        }
+
+        $backUrl = $request->query('return') ?: route('outgoing.edit', [
+            'id' => $doc->id,
+            'year' => $doc->protocol_year,
+        ]);
+
+        return redirect($backUrl)->with('success', 'Το συνημμένο διαγράφηκε.');
     }
-
-    // 2) Σβήνουμε row από table
-    $att->delete();
-
-    // 3) Backward compatibility: αν το attachment_path δείχνει σε αυτό που διέγραψες,
-    //    βάλε το στο "πρώτο" που απομένει ή null.
-    if ($doc->attachment_path === $att->path) {
-        $first = $doc->attachments()->orderBy('id', 'asc')->first();
-        $doc->update(['attachment_path' => $first?->path]);
-    }
-
-    // κρατάμε το return URL που ήδη χρησιμοποιείς
-    $backUrl = $request->query('return') ?: route('outgoing.edit', $doc->id);
-
-    return redirect($backUrl)->with('success', 'Το συνημμένο διαγράφηκε.');
-  }
-
 }

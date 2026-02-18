@@ -14,7 +14,7 @@
             <tr>
                 <th>Α/Α</th>
                 <th>Αρχή στην οποία απευθύνεται</th>
-                <th>Περίληψη εξερχόμενου εγγράφου</th>
+                <th>Περίληψη εξερχομένου εγγράφου</th>
                 <th>Χρονολογία</th>
                 <th>Σχετικοί Αριθμοί</th>
                 <th>Φάκελος Αρχείου</th>
@@ -59,7 +59,7 @@
                         @auth
                            @if(auth()->user()->isAdmin())
                              <td style="text-align:center;">
-                                  <a href="{{ route('outgoing.edit', $doc->id) }}"
+                                  <a href="{{ route('outgoing.edit', ['id' => $doc->id, 'year' => $doc->protocol_year]) }}"
                                    style="color:#16a34a; font-weight:600; text-decoration:underline;">
                                    Επεξεργασία
                                   </a>
