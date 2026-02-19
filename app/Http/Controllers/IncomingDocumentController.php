@@ -64,7 +64,7 @@ class IncomingDocumentController extends Controller
             ? Carbon::parse($document->incoming_date)
             : now();
 
-        $yearFolder = $date->format('Y');
+        $yearFolder = (string) $document->protocol_year;
         $folderDate = $date->format('Y-m-d');
 
         foreach ($files as $i => $file) {
@@ -140,7 +140,8 @@ class IncomingDocumentController extends Controller
                 ? Carbon::parse($doc->incoming_date)
                 : now();
 
-            $yearFolder = $date->format('Y');
+            $yearFolder = (string) $doc->protocol_year;
+
             $folderDate = $date->format('Y-m-d');
 
             foreach ($files as $i => $file) {

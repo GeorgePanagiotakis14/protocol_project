@@ -68,11 +68,12 @@ class OutgoingDocumentController extends Controller
 
         $files = $request->file('attachments');
 
-        $date = $document->incoming_date
-            ? Carbon::parse($document->incoming_date)
+        $date = $document->document_date
+            ? Carbon::parse($document->document_date)
             : now();
 
-        $year = $date->format('Y');
+        $year = (string) $document->protocol_year;
+
         $folderDate = $date->format('Y-m-d');
 
         foreach ($files as $i => $file) {
@@ -154,11 +155,12 @@ class OutgoingDocumentController extends Controller
         if ($request->hasFile('attachments')) {
             $files = $request->file('attachments');
 
-            $date = $doc->incoming_date
-                ? Carbon::parse($doc->incoming_date)
+            $date = $doc->document_date
+                ? Carbon::parse($doc->document_date)
                 : now();
 
-            $yearFolder = $date->format('Y');
+            $yearFolder = (string) $doc->protocol_year;
+
             $folderDate = $date->format('Y-m-d');
 
             foreach ($files as $i => $file) {
