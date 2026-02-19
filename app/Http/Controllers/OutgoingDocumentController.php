@@ -182,6 +182,9 @@ class OutgoingDocumentController extends Controller
             }
         }
 
+        audit_log('outgoing', 'update', $doc->id);
+
+
         return redirect()
             ->route('outgoing.index', ['year' => $doc->protocol_year])
             ->with('success', 'Το εξερχόμενο ενημερώθηκε.');

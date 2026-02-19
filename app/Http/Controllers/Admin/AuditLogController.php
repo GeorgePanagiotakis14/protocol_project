@@ -27,7 +27,8 @@ class AuditLogController extends Controller
                 })->orWhere(function ($q2) use ($outgoingIds) {
                     $q2->where('section', 'outgoing')
                        ->whereIn('document_id', $outgoingIds);
-                });
+                })->orWhereNull('document_id');
+                
             })
             ->latest();
 
