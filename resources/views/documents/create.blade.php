@@ -132,7 +132,7 @@
                         <input type="hidden" name="protocol_number" value="{{ $nextIncomingAa }}">
 
                         <label>Ημερομηνία Παραλαβής</label>
-                        <input type="date" name="incoming_date" required>
+                        <input type="date" name="incoming_date" required data-year="{{ $selectedYear }}">
 
                         <label>Αριθμός Εισερχομένου Εγγράφου</label>
                         <input type="text" name="incoming_protocol" required>
@@ -144,7 +144,7 @@
                         <input type="text" name="subject">
 
                         <label>Χρονολογία Εγγράφου</label>
-                        <input type="date" name="document_date">
+                        <input type="date" name="document_date" data-year="{{ $selectedYear }}">
 
                         <label>Περίληψη</label>
                         <textarea name="summary"></textarea>
@@ -231,7 +231,7 @@
                         <textarea name="summary"></textarea>
 
                         <label>Χρονολογία</label>
-                        <input type="date" name="document_date">
+                        <input type="date" name="document_date" data-year="{{ $selectedYear }}">
 
                         <label>Σχετικοί Αριθμοί</label>
                         <input type="text" name="incoming_document_number">
@@ -506,3 +506,4 @@
     </script>
 
 </x-app-layout>
+

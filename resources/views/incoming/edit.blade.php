@@ -1,5 +1,13 @@
 <x-app-layout>
 
+    @php
+        // Προσπαθούμε να πάρουμε σωστό έτος:
+        // 1) από το ίδιο το έγγραφο (αν έχει protocol_year)
+        // 2) από query ?year=...
+        // 3) fallback στο current year
+        $selectedYear = (int) ($document->protocol_year ?? request('year') ?? now()->year);
+    @endphp
+
     <x-slot name="header">
         <h2 class="font-semibold text-3xl text-gray-800 leading-tight">
             Επεξεργασία Εισερχόμενου Εγγράφου
@@ -35,7 +43,8 @@
 
             <label>Ημερομηνία Παραλαβής</label><br>
             <input type="date" name="incoming_date"
-                   value="{{ old('incoming_date', $document->incoming_date) }}">
+                   value="{{ old('incoming_date', $document->incoming_date) }}"
+                   data-year="{{ $selectedYear }}">
             <br><br>
 
             <label>Αριθμός εισερχομένου εγγράφου</label><br>
@@ -55,7 +64,8 @@
 
             <label>Χρονολογία εγγράφου</label><br>
             <input type="date" name="document_date"
-                   value="{{ old('document_date', $document->document_date) }}">
+                   value="{{ old('document_date', $document->document_date) }}"
+                   data-year="{{ $selectedYear }}">
             <br><br>
 
             <label>Περίληψη</label><br>

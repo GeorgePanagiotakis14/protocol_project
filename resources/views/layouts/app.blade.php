@@ -160,5 +160,58 @@
 
 </div>
 
+<!-- ✅ GLOBAL DATE-YEAR LOCK -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  /**
+   * Για κάθε <input type="date" data-year="YYYY">:
+   * - κλειδώνει min/max σε YYYY-01-01 έως YYYY-12-31
+   * - όταν ο χρήστης πατήσει το ημερολόγιο και το input είναι άδειο,
+   *   βάζει προσωρινά YYYY-01-01 ώστε να ανοίξει ο picker στο σωστό έτος
+   * - αν ο χρήστης κλείσει χωρίς επιλογή, καθαρίζει την προσωρινή τιμή
+   */
+  const inputs = document.querySelectorAll('input[type="date"][data-year]');
+
+  inputs.forEach((input) => {
+    const y = parseInt(input.dataset.year, 10);
+    if (!y || Number.isNaN(y)) return;
+
+    const yyyy = String(y).padStart(4, '0');
+    const min = `${yyyy}-01-01`;
+    const max = `${yyyy}-12-31`;
+
+    // ✅ περιορισμός επιλογών ΜΟΝΟ μέσα στο έτος
+    input.min = min;
+    input.max = max;
+
+    const setTempDefaultIfEmpty = () => {
+      if (!input.value) {
+        input.dataset.tempDefault = '1';
+        input.value = min; // αναγκάζει το calendar να ανοίξει στο σωστό έτος
+      }
+    };
+
+    // ✅ τρέχει ΠΡΙΝ ανοίξει ο native date picker (πολύ σημαντικό)
+    input.addEventListener('pointerdown', setTempDefaultIfEmpty, { capture: true });
+    input.addEventListener('mousedown', setTempDefaultIfEmpty, { capture: true });
+    input.addEventListener('touchstart', setTempDefaultIfEmpty, { capture: true });
+
+    // fallback
+    input.addEventListener('focus', setTempDefaultIfEmpty);
+
+    // αν ο χρήστης διάλεξε ημερομηνία, κρατάμε την επιλογή
+    input.addEventListener('change', () => {
+      if (input.dataset.tempDefault) delete input.dataset.tempDefault;
+    });
+
+    // αν άνοιξε/έκλεισε χωρίς επιλογή, καθάρισε την προσωρινή τιμή
+    input.addEventListener('blur', () => {
+        delete input.dataset.tempDefault;
+    });
+  });
+});
+</script>
+
 </body>
 </html>
+

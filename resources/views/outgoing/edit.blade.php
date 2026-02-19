@@ -1,5 +1,9 @@
 <x-app-layout>
 
+    @php
+        $selectedYear = (int) ($document->protocol_year ?? request('year') ?? now()->year);
+    @endphp
+
     <x-slot name="header">
         <h2 class="font-semibold text-3xl text-gray-800 leading-tight">
             Επεξεργασία Εξερχόμενου Εγγράφου
@@ -46,7 +50,8 @@
 
             <label>Χρονολογία</label><br>
             <input type="date" name="document_date"
-                  value="{{ $document->document_date }}"><br><br>
+                  value="{{ $document->document_date }}"
+                  data-year="{{ $selectedYear }}"><br><br>
 
 
             <label>Σχετικοί Αριθμοί</label><br>
@@ -224,3 +229,4 @@
     </script>
 
 </x-app-layout>
+
