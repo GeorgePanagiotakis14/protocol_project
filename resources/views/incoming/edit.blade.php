@@ -43,8 +43,7 @@
 
             <label>Ημερομηνία Παραλαβής</label><br>
             <input type="date" name="incoming_date"
-                   value="{{ old('incoming_date', $document->incoming_date) }}"
-                   data-year="{{ $selectedYear }}">
+                   value="{{ old('incoming_date', $document->incoming_date) }}">
             <br><br>
 
             <label>Αριθμός εισερχομένου εγγράφου</label><br>
@@ -64,8 +63,7 @@
 
             <label>Χρονολογία εγγράφου</label><br>
             <input type="date" name="document_date"
-                   value="{{ old('document_date', $document->document_date) }}"
-                   data-year="{{ $selectedYear }}">
+                   value="{{ old('document_date', $document->document_date) }}">
             <br><br>
 
             <label>Περίληψη</label><br>

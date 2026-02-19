@@ -50,8 +50,7 @@
 
             <label>Χρονολογία</label><br>
             <input type="date" name="document_date"
-                  value="{{ $document->document_date }}"
-                  data-year="{{ $selectedYear }}"><br><br>
+                  value="{{ $document->document_date }}"><br><br>
 
 
             <label>Σχετικοί Αριθμοί</label><br>
