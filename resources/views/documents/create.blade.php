@@ -103,6 +103,25 @@
             margin-top: -10px;
             margin-bottom: 12px;
         }
+
+        /* ✅ Wrapper για file input + κουμπί ώστε το validation bubble να εμφανίζεται σε σωστό σημείο */
+        .file-picker-wrap {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        /* ✅ Κρύβει το file input χωρίς display:none (ώστε να δουλεύει required + native bubble) */
+        .hidden-file-input {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
     </style>
 
     <div class="doc-page">
@@ -114,7 +133,7 @@
                 </h2>
             </div>
 
-            {{-- ✅ ΕΠΙΛΟΓΗ ΕΤΟΥΣ (μία γραμμή, χωρίς άλλη αλλαγή) --}}
+            {{-- ✅ ΕΠΙΛΟΓΗ ΕΤΟΥΣ --}}
             @include('partials.protocol-year-selector')
 
             <div class="doc-wrapper">
@@ -123,8 +142,7 @@
                 <div class="doc-box">
                     <div class="doc-title">ΕΙΣΕΡΧΟΜΕΝΑ ΕΓΓΡΑΦΑ</div>
 
-                    <form action="{{ route('incoming.store') }}" method="POST" enctype="multipart/form-data">
-
+                    <form id="incomingForm" action="{{ route('incoming.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
                         <label>Α/Α</label>
@@ -138,38 +156,41 @@
                         <input type="text" name="incoming_protocol" required>
 
                         <label>Τόπος που εκδόθηκε</label>
-                        <input type="text" name="sender">
+                        <input type="text" name="sender" required>
 
                         <label>Αρχή που το έχει εκδόσει</label>
-                        <input type="text" name="subject">
+                        <input type="text" name="subject" required>
 
                         <label>Χρονολογία Εγγράφου</label>
-                        <input type="date" name="document_date" data-year="{{ $selectedYear }}">
+                        <input type="date" name="document_date" required data-year="{{ $selectedYear }}">
 
                         <label>Περίληψη</label>
-                        <textarea name="summary"></textarea>
+                        <textarea name="summary" required></textarea>
 
                         <label>Φάκελος Αρχείου</label>
-                        <input type="text" name="comments">
+                        <input type="text" name="comments" required>
 
                         <label>Συνημμένα (PDF)</label>
 
-                        <input
-                            type="file"
-                            name="attachments[]"
-                            id="incoming_attachments"
-                            accept="application/pdf"
-                            multiple
-                            style="display:none"
-                        >
+                        <div class="file-picker-wrap">
+                            <input
+                                type="file"
+                                name="attachments[]"
+                                id="incoming_attachments"
+                                accept="application/pdf"
+                                multiple
+                                required
+                                class="hidden-file-input"
+                            >
 
-                        <button
-                            type="button"
-                            id="incoming_add_files_btn"
-                            style="padding:6px 12px; border-radius:6px; background:#16a34a; color:#fff; border:none; cursor:pointer;"
-                        >
-                            Προσθήκη αρχείων
-                        </button>
+                            <button
+                                type="button"
+                                id="incoming_add_files_btn"
+                                style="padding:6px 12px; border-radius:6px; background:#16a34a; color:#fff; border:none; cursor:pointer;"
+                            >
+                                Προσθήκη αρχείων
+                            </button>
+                        </div>
 
                         <small style="display:block; margin-top:6px; opacity:.7;">
                             Επιτρέπεται μόνο αρχείο PDF (μέχρι 50MB).
@@ -228,39 +249,41 @@
                         <input type="text" name="sender" required>
 
                         <label>Περίληψη Εξερχομένου Εγγράφου</label>
-                        <textarea name="summary"></textarea>
+                        <textarea name="summary" required></textarea>
 
                         <label>Χρονολογία</label>
-                        <input type="date" name="document_date" data-year="{{ $selectedYear }}">
+                        <input type="date" name="document_date" required data-year="{{ $selectedYear }}">
 
                         <label>Σχετικοί Αριθμοί</label>
-                        <input type="text" name="incoming_document_number">
+                        <input type="text" name="incoming_document_number" required>
 
                         <label>Φάκελος Αρχείου</label>
-                        <input type="text" name="incoming_protocol">
+                        <input type="text" name="incoming_protocol" required>
 
                         <label>Παρατηρήσεις</label>
-                        <textarea name="comments"></textarea>
+                        <textarea name="comments" required></textarea>
 
                         <label>Συνημμένα (PDF)</label>
 
-                        <input
-                            type="file"
-                            name="attachments[]"
-                            id="outgoing_attachments"
-                            accept="application/pdf"
-                            multiple
-                            required
-                            style="display:none"
-                        />
+                        <div class="file-picker-wrap">
+                            <input
+                                type="file"
+                                name="attachments[]"
+                                id="outgoing_attachments"
+                                accept="application/pdf"
+                                multiple
+                                required
+                                class="hidden-file-input"
+                            />
 
-                        <button
-                            type="button"
-                            id="outgoing_add_files_btn"
-                            style="padding:4px 10px; border-radius:6px; background:#16a34a; color:#fff; border:none; cursor:pointer;"
-                        >
-                            Προσθήκη αρχείων
-                        </button>
+                            <button
+                                type="button"
+                                id="outgoing_add_files_btn"
+                                style="padding:4px 10px; border-radius:6px; background:#16a34a; color:#fff; border:none; cursor:pointer;"
+                            >
+                                Προσθήκη αρχείων
+                            </button>
+                        </div>
 
                         <small style="display:block; margin-top:6px; opacity:.7;">
                             Επιτρέπεται μόνο αρχείο PDF (μέχρι 50MB).
@@ -273,7 +296,6 @@
                           {{ $errors->getBag('outgoing')->first() }}
                         </div>
                     @endif
-
 
                         <button class="save-btn">Αποθήκευση Εξερχομένου</button>
                     </form>
@@ -366,6 +388,17 @@
             });
 
             renderList();
+
+            // ✅ Extra-safe: επειδή το file input είναι hidden, δείχνουμε σίγουρα bubble όταν λείπει
+            const form = document.getElementById('incomingForm');
+            if (form) {
+                form.addEventListener('submit', (e) => {
+                    if (!input.files || input.files.length === 0) {
+                        e.preventDefault();
+                        input.reportValidity();
+                    }
+                });
+            }
         })();
     </script>
 
@@ -403,7 +436,7 @@
                     removeBtn.type = 'button';
                     removeBtn.textContent = 'Αφαίρεση';
                     removeBtn.style.marginLeft = '10px';
-                    removeBtn.style.padding = '2px 6px';     // ✅ ίδιο πάχος με incoming
+                    removeBtn.style.padding = '2px 6px';
                     removeBtn.style.borderRadius = '4px';
                     removeBtn.style.background = '#dc2626';
                     removeBtn.style.color = '#fff';
@@ -453,6 +486,17 @@
             });
 
             renderList();
+
+            // ✅ Extra-safe bubble για required file
+            const form = document.getElementById('outgoingForm');
+            if (form) {
+                form.addEventListener('submit', (e) => {
+                    if (!input.files || input.files.length === 0) {
+                        e.preventDefault();
+                        input.reportValidity();
+                    }
+                });
+            }
         })();
     </script>
 

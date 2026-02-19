@@ -163,13 +163,6 @@
 <!-- ✅ GLOBAL DATE-YEAR LOCK -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  /**
-   * Για κάθε <input type="date" data-year="YYYY">:
-   * - κλειδώνει min/max σε YYYY-01-01 έως YYYY-12-31
-   * - όταν ο χρήστης πατήσει το ημερολόγιο και το input είναι άδειο,
-   *   βάζει προσωρινά YYYY-01-01 ώστε να ανοίξει ο picker στο σωστό έτος
-   * - αν ο χρήστης κλείσει χωρίς επιλογή, καθαρίζει την προσωρινή τιμή
-   */
   const inputs = document.querySelectorAll('input[type="date"][data-year]');
 
   inputs.forEach((input) => {
@@ -180,37 +173,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const min = `${yyyy}-01-01`;
     const max = `${yyyy}-12-31`;
 
-    // ✅ περιορισμός επιλογών ΜΟΝΟ μέσα στο έτος
+    // ✅ Κλείδωμα ΜΟΝΟ μέσα στο επιλεγμένο έτος
     input.min = min;
     input.max = max;
 
+    // ✅ Βάζουμε default ΜΟΝΟ όταν ο χρήστης πατήσει το date input (όχι στο focus)
     const setTempDefaultIfEmpty = () => {
       if (!input.value) {
         input.dataset.tempDefault = '1';
-        input.value = min; // αναγκάζει το calendar να ανοίξει στο σωστό έτος
+        input.value = min; // ανοίγει στο σωστό έτος
       }
     };
 
-    // ✅ τρέχει ΠΡΙΝ ανοίξει ο native date picker (πολύ σημαντικό)
+    // User intent events (πριν ανοίξει ο native picker)
     input.addEventListener('pointerdown', setTempDefaultIfEmpty, { capture: true });
     input.addEventListener('mousedown', setTempDefaultIfEmpty, { capture: true });
     input.addEventListener('touchstart', setTempDefaultIfEmpty, { capture: true });
 
-    // fallback
-    input.addEventListener('focus', setTempDefaultIfEmpty);
+    // ❌ ΣΗΜΑΝΤΙΚΟ: ΔΕΝ βάζουμε focus handler
+    // γιατί στο submit ο browser κάνει focus στο πρώτο invalid required field
+    // και τότε γέμιζε μόνο του με 01/01.
 
-    // αν ο χρήστης διάλεξε ημερομηνία, κρατάμε την επιλογή
+    // Αν ο χρήστης όντως αλλάξει ημερομηνία, καθαρίζουμε το flag
     input.addEventListener('change', () => {
-      if (input.dataset.tempDefault) delete input.dataset.tempDefault;
+      delete input.dataset.tempDefault;
     });
 
-    // αν άνοιξε/έκλεισε χωρίς επιλογή, καθάρισε την προσωρινή τιμή
+    // (Προαιρετικό) Αν θες να μπορεί να μείνει 01/01 κανονικά, δεν κάνουμε auto-clear στο blur.
     input.addEventListener('blur', () => {
-        delete input.dataset.tempDefault;
+      delete input.dataset.tempDefault;
     });
   });
 });
 </script>
+
 
 </body>
 </html>
