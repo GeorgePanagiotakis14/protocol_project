@@ -9,12 +9,12 @@
  
         <label>
             Από:
-            <input type="date" name="from" required data-year="{{ $selectedYear ?? now()->year }}">
+            <input type="date" name="from" required>
         </label>
 
         <label style="margin-left:10px;">
             Έως:
-            <input type="date" name="to" required data-year="{{ $selectedYear ?? now()->year }}">
+            <input type="date" name="to" required>
         </label>
 
         <input type="hidden" name="year" value="{{ $selectedYear ?? now()->year }}">

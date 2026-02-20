@@ -226,6 +226,95 @@
             renderList();
         })();
     </script>
+    
+    <script>
+(function () {
+    // Key ανά document για να μην μπλέκουν μεταξύ τους
+    const docId = @json($document->id);
+    const KEY = 'outgoing_edit_draft_' + docId;
+
+    // Βρες main form (update)
+    const form = document.querySelector('form[action*="outgoing"][method="POST"]');
+    if (!form) return;
+
+    function snapshotForm() {
+        const data = {};
+        form.querySelectorAll('input, textarea, select').forEach((el) => {
+            if (!el.name) return;
+
+            // Δεν αποθηκεύουμε files
+            if (el.type === 'file') return;
+
+            // checkbox/radio
+            if (el.type === 'checkbox') {
+                data[el.name] = el.checked ? 1 : 0;
+                return;
+            }
+            if (el.type === 'radio') {
+                if (el.checked) data[el.name] = el.value;
+                return;
+            }
+
+            data[el.name] = el.value;
+        });
+
+        localStorage.setItem(KEY, JSON.stringify({
+            ts: Date.now(),
+            data
+        }));
+    }
+
+    function restoreForm() {
+        const raw = localStorage.getItem(KEY);
+        if (!raw) return;
+
+        let payload;
+        try { payload = JSON.parse(raw); } catch (e) { return; }
+        if (!payload || !payload.data) return;
+
+        const data = payload.data;
+
+        Object.keys(data).forEach((name) => {
+            const el = form.querySelector(`[name="${CSS.escape(name)}"]`);
+            if (!el) return;
+
+            if (el.type === 'checkbox') {
+                el.checked = !!Number(data[name]);
+                return;
+            }
+            if (el.type === 'radio') {
+                const radio = form.querySelector(`[name="${CSS.escape(name)}"][value="${CSS.escape(String(data[name]))}"]`);
+                if (radio) radio.checked = true;
+                return;
+            }
+
+            el.value = data[name] ?? '';
+        });
+    }
+
+    // Όταν κάνεις κανονικό save (submit του update), καθάρισε το draft
+    form.addEventListener('submit', () => {
+        localStorage.removeItem(KEY);
+    });
+
+    // Πριν από delete attachment: σώσε draft
+    document.querySelectorAll('button[onclick*="del-out-att-"]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            snapshotForm();
+        }, true);
+    });
+
+    document.querySelectorAll('form[id^="del-out-att-"]').forEach((delForm) => {
+        delForm.addEventListener('submit', () => {
+            snapshotForm();
+        }, true);
+    });
+
+    // Σε κάθε φόρτωμα edit: επανάφερε draft αν υπάρχει
+    restoreForm();
+
+})();
+</script>
 
 </x-app-layout>
 
